@@ -1,4 +1,4 @@
-DRAFT:=constrained-6tisch-anima-dtls-join-proxy.mkd
+DRAFT:=constrained-6tisch-anima-dtls-join-proxy
 VERSION:=$(shell ./getver ${DRAFT}.md )
 
 ${DRAFT}-${VERSION}.txt: ${DRAFT}.txt
