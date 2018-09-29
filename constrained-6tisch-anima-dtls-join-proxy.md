@@ -98,11 +98,11 @@ This document extends the work of {{I-D.ietf-anima-bootstrapping-keyinfra}} by r
 Enrolment of new nodes into constrained networks with constrained nodes
 present is described in
 {{I-D.ietf-anima-bootstrapping-keyinfra}} and makes use of Enrolment over Secure Transport (EST) <xref target= "RFC7030"/>. The specified solutions use https and may be too large in terms of
-code space or bandwidth required. Constrained devices in constrained networks {{RFC7228}} typically implement the IPv6 over Low-Power Wireless personal Area Networks (6LoWPAN) {{RFC4944}} and Constrained Application Protocol (CoAP) {{RFC7252}}.  
+code space or bandwidth required. Constrained devices in constrained networks {{RFC7228}} typically implement the IPv6 over Low-Power Wireless personal Area Networks (6LoWPAN) {{RFC4944}} and Constrained Application Protocol (CoAP) {{RFC7252}}.
 
 CoAP has chosen Datagram Transport Layer Security (DTLS) {{RFC6347}} as
 the preferred security protocol for authenticity and confidentiality
-of the messages. A constrained version of EST, using Coap and DTLS, is described in <xref target="I-D.ietf-ace-coap-est"/>. 
+of the messages. A constrained version of EST, using Coap and DTLS, is described in <xref target="I-D.ietf-ace-coap-est"/>.
 
 DTLS is a client-server protocol relying on the underlying IP layer
 to perform the routing between the DTLS Client and the DTLS Server.
@@ -148,8 +148,8 @@ since the Pledge (P) is not yet admitted to the network or there is
 no IP routability to Pledge (P) for any returned messages.
 
 ~~~~
-                              
-                      ++++    
+
+                      ++++
                       |E |----       +--+        +--+
                       |  |    \      |J |........|P |
                       ++++     \-----|  |        |  |
@@ -172,7 +172,7 @@ or discovery of the destination address of the EST Server to
 contact, the Join Proxy is introduced.  This Join-Proxy functionality is
 configured into all authenticated devices in the network which may
 act as the Join Proxy (J) for newly joining nodes.  The Join Proxy allows for routing of the packets from the Pledge (P) using
-IP routing to the intended EST Server.  
+IP routing to the intended EST Server.
 
 # Join Proxy specification
 
@@ -247,9 +247,25 @@ JPY[H(),C()] = Join Proxy message with header H and content C
 ~~~~
 {: #fig-join title='constrained joining message flow.' align="left"}
 
-# Design Considerations
+# Protocol
 
-TBD
+The JPY message is constructed as a single untagged {{RFC7049}} CBOR map.
+The contents of the map include:
+
+1:
+: the pledge IPv6 Link Local address as a 16-byte binary value.
+
+2:
+: the pledge's UDP port number, if different from 5684, as a CBOR integer.
+
+3:
+: the proxy's ifindex or other identifier for the physical port on which the
+pledge is connected.
+
+4:
+: the contents of the UDP (DTLS) message received from the pledge.
+
+
 
 # Security Considerations
 
