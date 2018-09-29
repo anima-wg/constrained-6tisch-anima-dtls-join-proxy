@@ -1,7 +1,7 @@
 ---
 title: Constrained Join Proxy for Bootstrapping Protocols
 abbrev: Join-Proxy
-docname: draft-ietf-vanderstok-constrained-join-proxy-00
+docname: draft-vanderstok-constrained-6tisch-anima-dtls-join-proxy-00
 
 # stand_alone: true
 
@@ -265,14 +265,19 @@ pledge is connected.
 4:
 : the contents of the UDP (DTLS) message received from the pledge.
 
-
+(INSERT CDDL notation)
 
 # Security Considerations
 
-TBD.
+It should be noted here that the contents of the CBOR map are not protected,
+but that the communication is between the Proxy and a known registrar
+(a connected UDP socket), and that messages from other origins are ignored.
 
 # IANA Considerations
 
+This document needs to create a registry for key indexes in the CBOR
+map.  It should be given a name, and the amending formula should be IETF
+Specification.
 
 # Acknowledgements
 
