@@ -1,7 +1,7 @@
 ---
 title: Constrained Join Proxy for Bootstrapping Protocols
 abbrev: Join-Proxy
-docname: draft-vanderstok-constrained-6tisch-anima-dtls-join-proxy-00
+docname: draft-vanderstok-constrained-anima-dtls-join-proxy-00
 
 # stand_alone: true
 
