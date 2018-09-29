@@ -12,7 +12,7 @@ Expires: April 2, 2019                            vanderstok consultancy
 
 
            Constrained Join Proxy for Bootstrapping Protocols
-            draft-ietf-vanderstok-constrained-join-proxy-00
+      draft-vanderstok-constrained-6tisch-anima-dtls-join-proxy-00
 
 Abstract
 
@@ -72,10 +72,10 @@ Table of Contents
    3.  Requirements Language . . . . . . . . . . . . . . . . . . . .   3
    4.  Join Proxy functionality  . . . . . . . . . . . . . . . . . .   3
    5.  Join Proxy specification  . . . . . . . . . . . . . . . . . .   4
-   6.  Design Considerations . . . . . . . . . . . . . . . . . . . .   6
-   7.  Security Considerations . . . . . . . . . . . . . . . . . . .   6
-   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   6
-   9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   6
+   6.  Protocol  . . . . . . . . . . . . . . . . . . . . . . . . . .   6
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .   7
+   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
+   9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   7
    10. Changelog . . . . . . . . . . . . . . . . . . . . . . . . . .   7
    11. References  . . . . . . . . . . . . . . . . . . . . . . . . .   7
      11.1.  Normative References . . . . . . . . . . . . . . . . . .   7
@@ -313,22 +313,22 @@ Internet-Draft                 Join-Proxy                 September 2018
 
                 Figure 2: constrained joining message flow.
 
-6.  Design Considerations
+6.  Protocol
 
-   TBD
+   The JPY message is constructed as a single untagged [RFC7049] CBOR
+   map.  The contents of the map include:
 
-7.  Security Considerations
+   1: the pledge IPv6 Link Local address as a 16-byte binary value.
 
-   TBD.
+   2: the pledge's UDP port number, if different from 5684, as a CBOR
+      integer.
 
-8.  IANA Considerations
+   3: the proxy's ifindex or other identifier for the physical port on
+      which the pledge is connected.
 
-9.  Acknowledgements
+   4: the contents of the UDP (DTLS) message received from the pledge.
 
-   Much of this text is inspired by [I-D.kumar-dice-dtls-relay].
-
-
-
+   (INSERT CDDL notation)
 
 
 
@@ -337,6 +337,23 @@ Richardson, et al.        Expires April 2, 2019                 [Page 6]
 
 Internet-Draft                 Join-Proxy                 September 2018
 
+
+7.  Security Considerations
+
+   It should be noted here that the contents of the CBOR map are not
+   protected, but that the communication is between the Proxy and a
+   known registrar (a connected UDP socket), and that messages from
+   other origins are ignored.
+
+8.  IANA Considerations
+
+   This document needs to create a registry for key indexes in the CBOR
+   map.  It should be given a name, and the amending formula should be
+   IETF Specification.
+
+9.  Acknowledgements
+
+   Much of this text is inspired by [I-D.kumar-dice-dtls-relay].
 
 10.  Changelog
 
@@ -369,6 +386,14 @@ Internet-Draft                 Join-Proxy                 September 2018
               (OSCORE)", draft-ietf-core-object-security-15 (work in
               progress), August 2018.
 
+
+
+
+Richardson, et al.        Expires April 2, 2019                 [Page 7]
+
+Internet-Draft                 Join-Proxy                 September 2018
+
+
    [ieee802-1AR]
               IEEE Standard, ., "IEEE 802.1AR Secure Device Identifier",
               2009, <http://standards.ieee.org/findstds/
@@ -386,13 +411,6 @@ Internet-Draft                 Join-Proxy                 September 2018
    [RFC6347]  Rescorla, E. and N. Modadugu, "Datagram Transport Layer
               Security Version 1.2", RFC 6347, DOI 10.17487/RFC6347,
               January 2012, <https://www.rfc-editor.org/info/rfc6347>.
-
-
-
-Richardson, et al.        Expires April 2, 2019                 [Page 7]
-
-Internet-Draft                 Join-Proxy                 September 2018
-
 
    [RFC7049]  Bormann, C. and P. Hoffman, "Concise Binary Object
               Representation (CBOR)", RFC 7049, DOI 10.17487/RFC7049,
@@ -425,6 +443,13 @@ Internet-Draft                 Join-Proxy                 September 2018
               <https://www.cl.cam.ac.uk/~fms27/
               papers/1999-StajanoAnd-duckling.pdf>.
 
+
+
+Richardson, et al.        Expires April 2, 2019                 [Page 8]
+
+Internet-Draft                 Join-Proxy                 September 2018
+
+
    [I-D.kumar-dice-dtls-relay]
               Kumar, S., Keoh, S., and O. Garcia-Morchon, "DTLS Relay
               for Constrained Environments", draft-kumar-dice-dtls-
@@ -441,14 +466,6 @@ Internet-Draft                 Join-Proxy                 September 2018
    [RFC6690]  Shelby, Z., "Constrained RESTful Environments (CoRE) Link
               Format", RFC 6690, DOI 10.17487/RFC6690, August 2012,
               <https://www.rfc-editor.org/info/rfc6690>.
-
-
-
-
-Richardson, et al.        Expires April 2, 2019                 [Page 8]
-
-Internet-Draft                 Join-Proxy                 September 2018
-
 
    [RFC6775]  Shelby, Z., Ed., Chakrabarti, S., Nordmark, E., and C.
               Bormann, "Neighbor Discovery Optimization for IPv6 over
@@ -479,6 +496,16 @@ Authors' Addresses
    Email: mcr+ietf@sandelman.ca
 
 
+
+
+
+
+
+Richardson, et al.        Expires April 2, 2019                 [Page 9]
+
+Internet-Draft                 Join-Proxy                 September 2018
+
+
    Peter van der Stok
    vanderstok consultancy
 
@@ -501,4 +528,33 @@ Authors' Addresses
 
 
 
-Richardson, et al.        Expires April 2, 2019                 [Page 9]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Richardson, et al.        Expires April 2, 2019                [Page 10]
