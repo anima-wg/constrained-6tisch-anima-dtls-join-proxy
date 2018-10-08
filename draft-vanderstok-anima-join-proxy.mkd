@@ -49,6 +49,7 @@ normative:
   I-D.ietf-ace-cbor-web-token:
   I-D.ietf-ace-coap-est:
   I-D.ietf-core-multipart-ct:
+  I-D.ietf-6tisch-enrollment-enhanced-beacon:
   ieee802-1AR:
     target: "http://standards.ieee.org/findstds/standard/802.1AR-2009.html"
     title: "IEEE 802.1AR Secure Device Identifier"
@@ -260,14 +261,29 @@ The JPY message is constructed as a payload with media-type application/multipar
      * application/pkcs7-mime; smime-type=CMC-response
      * application/pkcs8
      * application/csrattrs
-     * application/pkcs10                                      	
+     * application/pkcs10   
+
+Examples are shown in {{examples}}.                                   	
 
 #Discovery
 
 It is assumed that Join-Proxy seamlessly provides a coaps connection between Pledge and EST-server. An additional Registrar is needed to connect the Pledge to an http EST server, see section 8 of {{I-D.ietf-ace-coap-est}}.
  
-The Discovery of the EST server by the Join Proxy follows section 6 of {{I-D.ietf-ace-coap-est}}. The discovery of the Join-Proxy by the Pledge is an extension to the discovery described in section 4 of {{I-D.ietf-anima-bootstrapping-keyinfra}}. In particular this section replaces section 4.2 of {{I-D.ietf-anima-bootstrapping-keyinfra}}.
+The Discovery of the EST server by the Join Proxy follows section 6 of {{I-D.ietf-ace-coap-est}}. The discovery of the Join-Proxy by the Pledge is an extension to the discovery described in section 4 of {{I-D.ietf-anima-bootstrapping-keyinfra}}. In particular this section replaces section 4.2 of {{I-D.ietf-anima-bootstrapping-keyinfra}}. Three discover cases are discussed: coap discovery, 6tisch discovery and GRASP discovery.
 
+##GRASP discovery
+
+In the context of autonomous networks, discovery takes place vis the GRASP protocol as described in {{I-D.ietf-anima-bootstrapping-keyinfra}}. The port number is.
+
+    EDNote: to be specified
+
+##6tisch discovery
+
+The discovery of EST server by the pledge uses the enhanced beacons as discussed in {{I-D.ietf-6tisch-enrollment-enhanced-beacon}}.
+
+## Coaps discovery
+
+In the context of a coap network without Autonomous Network support, discovery follows the standard coap policy.
 The Pledge can discover a Join-Proxy by sending a link-local multicast message to ALL CoAP Nodes with address FF02::FD. Multiple or no nodes may respond. The handling of multiple responses and the absence of responses follow section 4 of {{I-D.ietf-anima-bootstrapping-keyinfra}}.
 
 The presence and location of (path to) the join-proxy resource are discovered by
@@ -300,7 +316,9 @@ This document needs to create a registry for key indices in the CBOR map.  It sh
 
 This specification registers a new Resource Type (rt=) Link Target Attributes in the "Resource Type (rt=) Link Target Attribute Values" subregistry under the "Constrained RESTful Environments (CoRE) Parameters" registry.
 
-      rt="brski-proxy". This EST resource is used to query and return the supported EST resource of a join-proxy placed between Pledge and EST server.
+      rt="brski-proxy". This EST resource is used to query and return 
+      the supported EST resource of a join-proxy placed between Pledge
+      and EST server.
       
 
 # Acknowledgements
@@ -309,7 +327,49 @@ Much of this text is inspired by {{I-D.kumar-dice-dtls-relay}}. Many thanks for 
 
 # Changelog
 
-empty
+## 00 to 01
+
+   * added payload examples in appendix
+   * discovery for three cases: AN, 6tisch and coaps
 
 --- back
 
+#Example payloads {#examples}
+
+Examples are extensions of two examples shown in {{I-D.ietf-ace-coap-est}}.
+
+     EDNote; provisional stake holder examples to be improved and corrected.
+
+##cacerts
+
+The request from Join-Proxy to EST-server looks like:
+
+    Get coaps://192.0.2.1/est/crts
+    content format = 287
+    payload =
+    [60,[L-L IPv6, port, ident]]
+
+The response will then be
+
+     2.05 Content
+     content format = 287
+     payload =
+     [60, [L-L IPv6, port, ident], 281, <DTLS encoded certificate>]
+
+##serverkeygen
+
+The request from Join-Proxy to EST-server looks like:
+
+    Get coaps://192.0.2.1/est/skg
+    content format = 287
+    payload =
+    [60,[L-L IPv6, port, ident], 286, <DTLS encoded request>]
+
+The response will then be
+
+     2.05 Content
+     content format = 287
+     payload =
+     [60, [L-L IPv6, port, ident], 
+      284, <DTLS encoded preamble>,
+      281, <DTLS encoded key>]
