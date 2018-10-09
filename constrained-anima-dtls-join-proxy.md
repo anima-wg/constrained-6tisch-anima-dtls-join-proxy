@@ -1,7 +1,7 @@
 ---
 title: Constrained Join Proxy for Bootstrapping Protocols
 abbrev: Join-Proxy
-docname: draft-vanderstok-constrained-anima-dtls-join-proxy-00
+docname: draft-vanderstok-constrained-anima-dtls-join-proxy-01
 
 # stand_alone: true
 
@@ -100,11 +100,11 @@ This document extends the work of {{I-D.ietf-anima-bootstrapping-keyinfra}} by r
 Enrolment of new nodes into constrained networks with constrained nodes
 present is described in
 {{I-D.ietf-anima-bootstrapping-keyinfra}} and makes use of Enrolment over Secure Transport (EST) <xref target= "RFC7030"/>. The specified solutions use https and may be too large in terms of
-code space or bandwidth required. Constrained devices in constrained networks {{RFC7228}} typically implement the IPv6 over Low-Power Wireless personal Area Networks (6LoWPAN) {{RFC4944}} and Constrained Application Protocol (CoAP) {{RFC7252}}.  
+code space or bandwidth required. Constrained devices in constrained networks {{RFC7228}} typically implement the IPv6 over Low-Power Wireless personal Area Networks (6LoWPAN) {{RFC4944}} and Constrained Application Protocol (CoAP) {{RFC7252}}.
 
 CoAP has chosen Datagram Transport Layer Security (DTLS) {{RFC6347}} as
 the preferred security protocol for authenticity and confidentiality
-of the messages. A constrained version of EST, using Coap and DTLS, is described in {{I-D.ietf-ace-coap-est}}. 
+of the messages. A constrained version of EST, using Coap and DTLS, is described in {{I-D.ietf-ace-coap-est}}.
 
 DTLS is a client-server protocol relying on the underlying IP layer
 to perform the routing between the DTLS Client and the DTLS Server.
@@ -150,8 +150,8 @@ since the Pledge (P) is not yet admitted to the network or there is
 no IP routability to Pledge (P) for any returned messages.
 
 ~~~~
-                              
-                      ++++    
+
+                      ++++
                       |E |----       +--+        +--+
                       |  |    \      |J |........|P |
                       ++++     \-----|  |        |  |
@@ -174,7 +174,7 @@ or discovery of the destination address of the EST Server to
 contact, the Join Proxy is introduced.  This Join-Proxy functionality is
 configured into all authenticated devices in the network which may
 act as the Join Proxy for newly joining nodes.  The Join Proxy allows for routing of the packets from the Pledge using
-IP routing to the intended EST Server.  
+IP routing to the intended EST Server.
 
 # Join Proxy specification
 
@@ -251,9 +251,9 @@ JPY[H(),C()] = Join ProxY message with header H and content C
 # Protocol
 
 The JPY message is constructed as a payload with media-type application/multipart-core specified in {{I-D.ietf-core-multipart-ct}}. Header and Contents fields use different media formats:
-	
+
    1. header field: application/CBOR containing a CBOR array with the pledge IPv6 Link Local address as a 16-byte binary value, the pledge's UDP port number, if different from 5684, as a CBOR integer, and the proxy's ifindex or other identifier for the physical port on which the pledge is connected.
-   2. Content field: Any of the media types specified {{I-D.ietf-ace-coap-est}} dependent on the EST function that is requested:  
+   2. Content field: Any of the media types specified {{I-D.ietf-ace-coap-est}} dependent on the EST function that is requested:
 
      * application/pkcs7-mime; smime-type=server-generated-key
      * application/pkcs7-mime; smime-type=certs-only
@@ -261,14 +261,14 @@ The JPY message is constructed as a payload with media-type application/multipar
      * application/pkcs7-mime; smime-type=CMC-response
      * application/pkcs8
      * application/csrattrs
-     * application/pkcs10   
+     * application/pkcs10
 
-Examples are shown in {{examples}}.                                   	
+Examples are shown in {{examples}}.
 
 #Discovery
 
 It is assumed that Join-Proxy seamlessly provides a coaps connection between Pledge and EST-server. An additional Registrar is needed to connect the Pledge to an http EST server, see section 8 of {{I-D.ietf-ace-coap-est}}.
- 
+
 The Discovery of the EST server by the Join Proxy follows section 6 of {{I-D.ietf-ace-coap-est}}. The discovery of the Join-Proxy by the Pledge is an extension to the discovery described in section 4 of {{I-D.ietf-anima-bootstrapping-keyinfra}}. In particular this section replaces section 4.2 of {{I-D.ietf-anima-bootstrapping-keyinfra}}. Three discover cases are discussed: coap discovery, 6tisch discovery and GRASP discovery.
 
 ##GRASP discovery
@@ -305,7 +305,7 @@ Port numbers, not returned in the example, are assumed to be the default numbers
 
 # Security Considerations
 
-It should be noted here that the contents of the CBOR map are not	
+It should be noted here that the contents of the CBOR map are not
 protected, but that the communication is between the Proxy and a known registrar (a connected UDP socket), and that messages from other origins are ignored.
 
 # IANA Considerations
@@ -316,10 +316,10 @@ This document needs to create a registry for key indices in the CBOR map.  It sh
 
 This specification registers a new Resource Type (rt=) Link Target Attributes in the "Resource Type (rt=) Link Target Attribute Values" subregistry under the "Constrained RESTful Environments (CoRE) Parameters" registry.
 
-      rt="brski-proxy". This EST resource is used to query and return 
+      rt="brski-proxy". This EST resource is used to query and return
       the supported EST resource of a join-proxy placed between Pledge
       and EST server.
-      
+
 
 # Acknowledgements
 
@@ -370,6 +370,6 @@ The response will then be
      2.05 Content
      content format = 287
      payload =
-     [60, [L-L IPv6, port, ident], 
+     [60, [L-L IPv6, port, ident],
       284, <DTLS encoded preamble>,
       281, <DTLS encoded key>]
