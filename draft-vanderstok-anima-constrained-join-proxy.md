@@ -311,9 +311,18 @@ This specification registers a new Resource Type (rt=) Link Target Attributes in
 
 # Acknowledgements
 
-Much of this text is inspired by {{I-D.kumar-dice-dtls-relay}}. Many thanks for the comments by Brian Carpenter.
+Many thanks for the comments by Brian Carpenter.
+
+# Contributors
+
+Sandeep Kumar, Sye loong Keoh, and Oscar Garcia-Morchon are the co-authors of the draft-kumar-dice-dtls-relay-02. Their draft has served as a basis for this document. Much text from their draft is copied over to this draft.
 
 # Changelog
+
+## 00 to 01
+
+   * added Contributors section
+
 
 ## 00 to 00
 
