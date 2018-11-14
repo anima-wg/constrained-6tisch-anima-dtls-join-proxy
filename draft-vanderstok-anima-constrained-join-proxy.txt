@@ -5,10 +5,10 @@
 anima Working Group                                        M. Richardson
 Internet-Draft                                  Sandelman Software Works
 Intended status: Standards Track                         P. van der Stok
-Expires: April 21, 2019                           vanderstok consultancy
+Expires: May 18, 2019                             vanderstok consultancy
                                                            P. Kampanakis
                                                            Cisco Systems
-                                                        October 18, 2018
+                                                       November 14, 2018
 
 
            Constrained Join Proxy for Bootstrapping Protocols
@@ -39,7 +39,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on April 21, 2019.
+   This Internet-Draft will expire on May 18, 2019.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Richardson, et al.       Expires April 21, 2019                 [Page 1]
+Richardson, et al.        Expires May 18, 2019                  [Page 1]
 
-Internet-Draft                 Join-Proxy                   October 2018
+Internet-Draft                 Join-Proxy                  November 2018
 
 
    carefully, as they describe your rights and restrictions with respect
@@ -72,23 +72,25 @@ Table of Contents
    4.  Join Proxy functionality  . . . . . . . . . . . . . . . . . .   3
    5.  Join Proxy specification  . . . . . . . . . . . . . . . . . .   4
    6.  Protocol  . . . . . . . . . . . . . . . . . . . . . . . . . .   6
-   7.  Discovery . . . . . . . . . . . . . . . . . . . . . . . . . .   6
+   7.  Discovery . . . . . . . . . . . . . . . . . . . . . . . . . .   7
      7.1.  GRASP discovery . . . . . . . . . . . . . . . . . . . . .   7
      7.2.  6tisch discovery  . . . . . . . . . . . . . . . . . . . .   7
      7.3.  Coaps discovery . . . . . . . . . . . . . . . . . . . . .   7
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   7
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
    9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   8
      9.1.  Resource Type registry  . . . . . . . . . . . . . . . . .   8
    10. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   8
-   11. Changelog . . . . . . . . . . . . . . . . . . . . . . . . . .   8
-     11.1.  00 to 00 . . . . . . . . . . . . . . . . . . . . . . . .   8
-   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .   8
-     12.1.  Normative References . . . . . . . . . . . . . . . . . .   8
-     12.2.  Informative References . . . . . . . . . . . . . . . . .   9
-   Appendix A.  Example payloads . . . . . . . . . . . . . . . . . .  10
-     A.1.  cacerts . . . . . . . . . . . . . . . . . . . . . . . . .  10
+   11. Contributors  . . . . . . . . . . . . . . . . . . . . . . . .   8
+   12. Changelog . . . . . . . . . . . . . . . . . . . . . . . . . .   9
+     12.1.  00 to 01 . . . . . . . . . . . . . . . . . . . . . . . .   9
+     12.2.  00 to 00 . . . . . . . . . . . . . . . . . . . . . . . .   9
+   13. References  . . . . . . . . . . . . . . . . . . . . . . . . .   9
+     13.1.  Normative References . . . . . . . . . . . . . . . . . .   9
+     13.2.  Informative References . . . . . . . . . . . . . . . . .  10
+   Appendix A.  Example payloads . . . . . . . . . . . . . . . . . .  11
+     A.1.  cacerts . . . . . . . . . . . . . . . . . . . . . . . . .  11
      A.2.  serverkeygen  . . . . . . . . . . . . . . . . . . . . . .  11
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  11
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  12
 
 1.  Introduction
 
@@ -101,18 +103,21 @@ Table of Contents
    Wireless personal Area Networks (6LoWPAN) [RFC4944] and Constrained
    Application Protocol (CoAP) [RFC7252].
 
+
+
+
+
+
+
+Richardson, et al.        Expires May 18, 2019                  [Page 2]
+
+Internet-Draft                 Join-Proxy                  November 2018
+
+
    CoAP has chosen Datagram Transport Layer Security (DTLS) [RFC6347] as
    the preferred security protocol for authenticity and confidentiality
    of the messages.  A constrained version of EST, using Coap and DTLS,
    is described in [I-D.ietf-ace-coap-est].
-
-
-
-
-Richardson, et al.       Expires April 21, 2019                 [Page 2]
-
-Internet-Draft                 Join-Proxy                   October 2018
-
 
    DTLS is a client-server protocol relying on the underlying IP layer
    to perform the routing between the DTLS Client and the DTLS Server.
@@ -157,19 +162,19 @@ Internet-Draft                 Join-Proxy                   October 2018
    authenticated into the network.  At this stage, it can only
    communicate one-hop to its nearest neighbour, the Join proxy (J)
    using their link-local IPv6 addresses.  However, the Pledge (P) needs
+
+
+
+Richardson, et al.        Expires May 18, 2019                  [Page 3]
+
+Internet-Draft                 Join-Proxy                  November 2018
+
+
    to communicate with end-to-end security with a Registrar hosting the
    EST server (E) to authenticate and get the relevant system/network
    parameters.  If the Pledge (P) initiates a DTLS connection to the EST
    server whose IP address has been pre-configured, then the packets are
    dropped at the Join Proxy (J) since the Pledge (P) is not yet
-
-
-
-Richardson, et al.       Expires April 21, 2019                 [Page 3]
-
-Internet-Draft                 Join-Proxy                   October 2018
-
-
    admitted to the network or there is no IP routability to Pledge (P)
    for any returned messages.
 
@@ -213,18 +218,19 @@ Internet-Draft                 Join-Proxy                   October 2018
    messages through the network.  However, if the neighbour device has
    the Join Proxy functionality enabled, it routes the DTLS message to a
    specific EST Server.  Additional security mechanisms need to exist to
+
+
+
+Richardson, et al.        Expires May 18, 2019                  [Page 4]
+
+Internet-Draft                 Join-Proxy                  November 2018
+
+
    prevent this routing functionality being used by rogue nodes to
    bypass any network authentication procedures.
 
    The Join-proxy is stateless to minimize the requirements on the
    constrained Join-proxy device.
-
-
-
-Richardson, et al.       Expires April 21, 2019                 [Page 4]
-
-Internet-Draft                 Join-Proxy                   October 2018
-
 
    If an untrusted DTLS Client that can only use link-local addressing
    wants to contact a trusted end-point EST Server, it sends the DTLS
@@ -268,20 +274,20 @@ Internet-Draft                 Join-Proxy                   October 2018
    |              :                            |     :     |    :      |
    |                                           |     :     |    :      |
    |      --Finished-->                        | IP_C:p_C  |IP_Ra:5684 |
+
+
+
+Richardson, et al.        Expires May 18, 2019                  [Page 5]
+
+Internet-Draft                 Join-Proxy                  November 2018
+
+
    |                    --JPY[H(IP_C:p_C),-->  | IP_Rb:p_Rb|IP_S:5684  |
    |                          C(Finished)]     |           |           |
    |                    <--JPY[H(IP_C:p_C),--  | IP_S:5684 |IP_Rb:p_Rb |
    |                         C(Finished)]      |           |           |
    |      <--Finished--                        | IP_Ra:5684|IP_C:p_C   |
    |              :                            |     :     |    :      |
-
-
-
-Richardson, et al.       Expires April 21, 2019                 [Page 5]
-
-Internet-Draft                 Join-Proxy                   October 2018
-
-
    +-------------------------------------------+-----------+-----------+
    IP_C:p_C = Link-local IP address and port of the Pledge
    IP_S:5684 = IP address and coaps port of EST Server
@@ -319,6 +325,19 @@ Internet-Draft                 Join-Proxy                   October 2018
 
    Examples are shown in Appendix A.
 
+
+
+
+
+
+
+
+
+Richardson, et al.        Expires May 18, 2019                  [Page 6]
+
+Internet-Draft                 Join-Proxy                  November 2018
+
+
 7.  Discovery
 
    It is assumed that Join-Proxy seamlessly provides a coaps connection
@@ -330,14 +349,6 @@ Internet-Draft                 Join-Proxy                   October 2018
    section 6 of [I-D.ietf-ace-coap-est].  The discovery of the Join-
    Proxy by the Pledge is an extension to the discovery described in
    section 4 of [I-D.ietf-anima-bootstrapping-keyinfra].  In particular
-
-
-
-Richardson, et al.       Expires April 21, 2019                 [Page 6]
-
-Internet-Draft                 Join-Proxy                   October 2018
-
-
    this section replaces section 4.2 of
    [I-D.ietf-anima-bootstrapping-keyinfra].  Three discovery cases are
    discussed: coap discovery, 6tisch discovery and GRASP discovery.
@@ -375,6 +386,14 @@ Internet-Draft                 Join-Proxy                   October 2018
 
      REQ: GET coap://[FF02::FD]/.well-known/core?rt=brski-proxy
 
+
+
+
+Richardson, et al.        Expires May 18, 2019                  [Page 7]
+
+Internet-Draft                 Join-Proxy                  November 2018
+
+
      RES: 2.05 Content
      </est>; rt="brski-proxy"
 
@@ -386,14 +405,6 @@ Internet-Draft                 Join-Proxy                   October 2018
 8.  Security Considerations
 
    It should be noted here that the contents of the CBOR map are not
-
-
-
-Richardson, et al.       Expires April 21, 2019                 [Page 7]
-
-Internet-Draft                 Join-Proxy                   October 2018
-
-
    protected, but that the communication is between the Proxy and a
    known registrar (a connected UDP socket), and that messages from
    other origins are ignored.
@@ -417,20 +428,43 @@ Internet-Draft                 Join-Proxy                   October 2018
 
 10.  Acknowledgements
 
-   Much of this text is inspired by [I-D.kumar-dice-dtls-relay].  Many
-   thanks for the comments by Brian Carpenter.
+   Many thanks for the comments by Brian Carpenter.
 
-11.  Changelog
+11.  Contributors
 
-11.1.  00 to 00
+   Sandeep Kumar, Sye loong Keoh, and Oscar Garcia-Morchon are the co-
+   authors of the draft-kumar-dice-dtls-relay-02.  Their draft has
+   served as a basis for this document.  Much text from their draft is
+   copied over to this draft.
+
+
+
+
+
+
+
+
+
+Richardson, et al.        Expires May 18, 2019                  [Page 8]
+
+Internet-Draft                 Join-Proxy                  November 2018
+
+
+12.  Changelog
+
+12.1.  00 to 01
+
+   o  added Contributors section
+
+12.2.  00 to 00
 
    o  added payload examples in appendix
 
    o  discovery for three cases: AN, 6tisch and coaps
 
-12.  References
+13.  References
 
-12.1.  Normative References
+13.1.  Normative References
 
    [I-D.ietf-6tisch-enrollment-enhanced-beacon]
               Dujovne, D. and M. Richardson, "IEEE802.15.4 Informational
@@ -439,17 +473,6 @@ Internet-Draft                 Join-Proxy                   October 2018
               beacon-00 (work in progress), July 2018.
 
    [I-D.ietf-ace-coap-est]
-
-
-
-
-
-
-Richardson, et al.       Expires April 21, 2019                 [Page 8]
-
-Internet-Draft                 Join-Proxy                   October 2018
-
-
               Stok, P., Kampanakis, P., Kumar, S., Richardson, M.,
               Furuhed, M., and S. Raza, "EST over secure CoAP (EST-
               coaps)", draft-ietf-ace-coap-est-00 (work in progress),
@@ -475,6 +498,14 @@ Internet-Draft                 Join-Proxy                   October 2018
               Security Version 1.2", RFC 6347, DOI 10.17487/RFC6347,
               January 2012, <https://www.rfc-editor.org/info/rfc6347>.
 
+
+
+
+Richardson, et al.        Expires May 18, 2019                  [Page 9]
+
+Internet-Draft                 Join-Proxy                  November 2018
+
+
    [RFC7049]  Bormann, C. and P. Hoffman, "Concise Binary Object
               Representation (CBOR)", RFC 7049, DOI 10.17487/RFC7049,
               October 2013, <https://www.rfc-editor.org/info/rfc7049>.
@@ -484,7 +515,7 @@ Internet-Draft                 Join-Proxy                   October 2018
               8366, DOI 10.17487/RFC8366, May 2018, <https://www.rfc-
               editor.org/info/rfc8366>.
 
-12.2.  Informative References
+13.2.  Informative References
 
    [I-D.kumar-dice-dtls-relay]
               Kumar, S., Keoh, S., and O. Garcia-Morchon, "DTLS Relay
@@ -495,16 +526,6 @@ Internet-Draft                 Join-Proxy                   October 2018
               "Transmission of IPv6 Packets over IEEE 802.15.4
               Networks", RFC 4944, DOI 10.17487/RFC4944, September 2007,
               <https://www.rfc-editor.org/info/rfc4944>.
-
-
-
-
-
-
-Richardson, et al.       Expires April 21, 2019                 [Page 9]
-
-Internet-Draft                 Join-Proxy                   October 2018
-
 
    [RFC6690]  Shelby, Z., "Constrained RESTful Environments (CoRE) Link
               Format", RFC 6690, DOI 10.17487/RFC6690, August 2012,
@@ -532,6 +553,15 @@ Internet-Draft                 Join-Proxy                   October 2018
               rfc7252>.
 
    [duckling]
+
+
+
+
+Richardson, et al.        Expires May 18, 2019                 [Page 10]
+
+Internet-Draft                 Join-Proxy                  November 2018
+
+
               Stajano, F. and R. Anderson, "The resurrecting duckling:
               security issues for ad-hoc wireless networks", 1999,
               <https://www.cl.cam.ac.uk/~fms27/papers/1999-StajanoAnd-
@@ -554,14 +584,6 @@ A.1.  cacerts
 
    Get coaps://192.0.2.1/est/crts
    content format = 287
-
-
-
-Richardson, et al.       Expires April 21, 2019                [Page 10]
-
-Internet-Draft                 Join-Proxy                   October 2018
-
-
    payload =
    [60,[L-L IPv6, port, ident]]
 
@@ -582,6 +604,19 @@ A.2.  serverkeygen
    [60,[L-L IPv6, port, ident], 286, <DTLS encoded request>]
 
    The response will then be
+
+
+
+
+
+
+
+
+
+Richardson, et al.        Expires May 18, 2019                 [Page 11]
+
+Internet-Draft                 Join-Proxy                  November 2018
+
 
    2.05 Content
    content format = 287
@@ -613,4 +648,25 @@ Authors' Addresses
 
 
 
-Richardson, et al.       Expires April 21, 2019                [Page 11]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Richardson, et al.        Expires May 18, 2019                 [Page 12]
