@@ -11,6 +11,8 @@
 <!ENTITY I-D.ietf-ace-coap-est SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-ace-coap-est.xml">
 <!ENTITY I-D.ietf-core-multipart-ct SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-core-multipart-ct.xml">
 <!ENTITY I-D.ietf-6tisch-enrollment-enhanced-beacon SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-6tisch-enrollment-enhanced-beacon.xml">
+<!ENTITY I-D.ietf-anima-constrained-voucher SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-anima-constrained-voucher.xml">
+<!ENTITY I-D.ietf-anima-grasp SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-anima-grasp.xml">
 <!ENTITY RFC6690 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6690.xml">
 <!ENTITY RFC7030 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7030.xml">
 <!ENTITY RFC7228 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7228.xml">
@@ -24,7 +26,7 @@
 <?rfc sortrefs="yes"?>
 <?rfc symrefs="yes"?>
 
-<rfc ipr="trust200902" docName="draft-vanderstok-anima-constrained-join-proxy-00" category="std">
+<rfc ipr="trust200902" docName="draft-vanderstok-anima-constrained-join-proxy-02" category="std">
 
   <front>
     <title abbrev="Join-Proxy">Constrained Join Proxy for Bootstrapping Protocols</title>
@@ -48,7 +50,7 @@
       </address>
     </author>
 
-    <date year="2018" month="November" day="14"/>
+    <date year="2019" month="July" day="05"/>
 
     <area>Internet</area>
     <workgroup>anima Working Group</workgroup>
@@ -58,9 +60,9 @@
 
 
 <t>This document defines a protocol to securely assign a pledge to an
-owner, using an intermediary node between pledge and owner.  This intermediary node is known as a "constrained-join-proxy".</t>
+owner, using an intermediary node between pledge and owner.  This intermediary node is known as a "constrained Join Proxy".</t>
 
-<t>This document extends the work of [ietf-anima-bootstrapping-keyinfra] by replacing the Circuit-proxy by a stateless constrained join-proxy, that transports routing information.</t>
+<t>This document extends the work of [ietf-anima-bootstrapping-keyinfra] by replacing the Circuit-proxy by a stateless constrained Join Proxy, that transports routing information.</t>
 
 
 
@@ -93,7 +95,7 @@ to communicate with a neighbour node using neighbour discovery
 parameters.  However, before the device can receive these
 configuration parameters, it needs to authenticate itself to the network to which it connects. In <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/> Enrolment over Secure Transport (EST) <xref target="RFC7030"/> is used to authenticate the joining device. However, IPv6 routing is necessary to establish a connection between joining device and the EST server.</t>
 
-<t>This document specifies a Join-proxy and protocol to act as intermediary between joining device and EST server to establish a connection between joining device and EST server.</t>
+<t>This document specifies a Join Proxy and protocol to act as intermediary between joining device and EST server to establish a connection between joining device and EST server.</t>
 
 <t>This document is very much inspired by text published earlier in <xref target="I-D.kumar-dice-dtls-relay"/>.</t>
 
@@ -120,7 +122,7 @@ implementations.</t>
 <t>As depicted in the <xref target="fig-net"/>, the joining Device, or pledge (P), is more than one
 hop away from the EST server (E) and not yet authenticated into the
 network.  At this stage, it can only communicate one-hop to its
-nearest neighbour, the Join proxy (J) using their link-local IPv6 addresses.
+nearest neighbour, the Join Proxy (J) using their link-local IPv6 addresses.
 However, the Pledge (P) needs to communicate with end-to-end security
 with a Registrar hosting the EST server (E) to authenticate and get
 the relevant system/network parameters.  If the Pledge (P) initiates
@@ -136,7 +138,7 @@ no IP routability to Pledge (P) for any returned messages.</t>
                       |  |    \      |J |........|P |
                       ++++     \-----|  |        |  |
                    EST server        +--+        +--+
-                   REgistrar       Join Proxy   PLedge
+                   REgistrar       Join Proxy   Pledge
                                                 "Joining" Device
 
 ]]></artwork></figure>
@@ -145,12 +147,12 @@ no IP routability to Pledge (P) for any returned messages.</t>
 to the EST server (E) in the network assuming appropriate credentials
 are exchanged out-of-band, e.g. a hash of the Pledge (P)'s raw public
 key could be provided to the EST server (E).  However, the Pledge (P)
-is unaware of the IP address of the EST-server (E) to initiate a DTLS
+may be unaware of the IP address of the EST-server (E) to initiate a DTLS
 connection and perform authentication with.</t>
 
 <t>A DTLS connection is required between Pledge and EST server. To overcome the problems with non-routability of DTLS packets and/
 or discovery of the destination address of the EST Server to
-contact, the Join Proxy is introduced.  This Join-Proxy functionality is
+contact, the Join Proxy is introduced.  This Join Proxy functionality is
 configured into all authenticated devices in the network which may
 act as the Join Proxy for newly joining nodes.  The Join Proxy allows for routing of the packets from the Pledge using
 IP routing to the intended EST Server.</t>
@@ -158,7 +160,63 @@ IP routing to the intended EST Server.</t>
 </section>
 <section anchor="join-proxy-specification" title="Join Proxy specification">
 
-<t>In this section, the constrained Join Proxy functionality is specified using DTLS and coaps.  When a joining device as a client attempts a DTLS
+<t>The Join Proxy can operate in two modes:</t>
+
+<t><list style="symbols">
+  <t>Statefull mode</t>
+  <t>Stateless mode</t>
+</list></t>
+
+<section anchor="statefull-join-proxy" title="Statefull Join Proxy">
+
+<t>In stateful mode, the joining
+node forwards the DTLS
+messages to the EST Server.</t>
+
+<t>Assume that the Pledge does not know the IP
+address of the EST Server it needs to contact. In that situation, the Join Proxy knows the (cofigured or discovered) IP
+address of a EST Server that the Pledge needs to contact.  The Pledge initiates its request
+as if the Join Proxy is the intended EST Server.  The Join Proxy
+changes the IP packet (without modifying the DTLS message) as
+in the previous case by modifying both the source and destination
+addresses to forward the message to the intended EST Server. The
+Join Proxy maintains a 4-tuple array to translate the
+DTLS messages received from the EST Server and forward it to the
+EST Client.  In <xref target="fig-statefull2"/> the various steps of the message flow are shown:</t>
+
+<figure title="constrained statefull joining message flow with EST server address known to Join Proxy." align="left" anchor="fig-statefull2"><artwork><![CDATA[
++------------+------------+-------------+--------------------------+
+| EST Client | Join Proxy | EST Server  |          Message         |
+|    (P)     |     (J)    |    (E)      | Src_IP:port | Dst_IP:port|
++------------+------------+-------------+-------------+------------+
+|      --ClientHello-->                 |   IP_P:p_P  | IP_Ja:5684 |
+|                    --ClientHello-->   |   IP_Jb:p_Jb| IP_E:5684  |
+|                                       |             |            | 
+|                    <--ServerHello--   |   IP_E:5684 | IP_Jb:p_Jb |
+|                            :          |             |            |
+|       <--ServerHello--     :          |   IP_Ja:5684| IP_P:p_P   |
+|               :            :          |             |            |
+|               :            :          |       :     |    :       |
+|               :            :          |       :     |    :       |
+|        --Finished-->       :          |   IP_P:p_P  | IP_Ja:5684 |
+|                      --Finished-->    |   IP_Jb:p_Jb| IP_E:5684  |
+|                                       |             |            |
+|                      <--Finished--    |   IP_E:5684 | IP_Jb:p_Jb |
+|        <--Finished--                  |   IP_Ja:5684| IP_P:p_P   |
+|              :             :          |      :      |     :      |
++---------------------------------------+-------------+------------+
+IP_P:p_P = Link-local IP address and port of Pledge (DTLS Client)
+IP_E:5684 = Global IP address and coaps port of EST Server
+IP_Ja:5684 = Link-local IP address and coaps port of Join Proxy
+IP_Jb:p_Rb = Global IP address and port of Join proxy
+]]></artwork></figure>
+
+</section>
+<section anchor="stateless-join-proxy" title="Stateless Join Proxy">
+
+<t>The Join Proxy is stateless to minimize the requirements on the constrained Join Proxy device.</t>
+
+<t>When a joining device as a client attempts a DTLS
 connection to the EST server, it uses its link-local IP address as its IP source address.  This message is
 transmitted one-hop to a neighbour node.  Under normal circumstances,
 this message would be dropped at the neighbour node since the joining
@@ -168,8 +226,6 @@ the Join Proxy functionality enabled, it routes the DTLS message to a
 specific EST Server.  Additional security mechanisms need to exist
 to prevent this routing functionality being used by rogue nodes to
 bypass any network authentication procedures.</t>
-
-<t>The Join-proxy is stateless to minimize the requirements on the constrained Join-proxy device.</t>
 
 <t>If an untrusted DTLS Client that can only use link-local addressing wants to contact
  a trusted end-point EST Server, it sends the DTLS message to the Join Proxy. The Join Proxy extends this message into a new type of
@@ -194,76 +250,122 @@ bypass any network authentication procedures.</t>
 retrieves the two parts.  It uses the Header field to route the DTLS
 message retrieved from the Contents field to the Pledge.</t>
 
-<t>The <xref target="fig-join"/> depicts the message flow diagram when the EST
-Server end-point address is known only to the Join Proxy:</t>
+<t>The <xref target="fig-stateless"/> depicts the message flow diagram:</t>
 
-<figure title="constrained joining message flow." align="left" anchor="fig-join"><artwork><![CDATA[
+<figure title="constrained stateless joining message flow." align="left" anchor="fig-stateless"><artwork><![CDATA[
 +--------------+------------+---------------+-----------------------+
 | EST  Client  | Join Proxy |    EST server |        Message        |
 |     (P)      |     (J)    |      (E)      |Src_IP:port|Dst_IP:port|
 +--------------+------------+---------------+-----------+-----------+
-|      --ClientHello-->                     | IP_C:p_C  |IP_Ra:5684 |
-|                    --JPY[H(IP_C:p_C),-->  | IP_Rb:p_Rb|IP_S:5684  |
+|      --ClientHello-->                     | IP_P:p_P  |IP_Ja:5684 |
+|                    --JPY[H(IP_P:p_P),-->  | IP_Jb:p_Jb|IP_E:5684  |
 |                          C(ClientHello)]  |           |           |
-|                    <--JPY[H(IP_C:p_C),--  | IP_S:5684 |IP_Rb:p_Rb |
+|                    <--JPY[H(IP_P:p_P),--  | IP_E:5684 |IP_Jb:p_Jb |
 |                         C(ServerHello)]   |           |           |
-|      <--ServerHello--                     | IP_Ra:5684|IP_C:p_C   |
+|      <--ServerHello--                     | IP_Ja:5684|IP_P:p_P   |
 |              :                            |           |           |
 |              :                            |     :     |    :      |
 |                                           |     :     |    :      |
-|      --Finished-->                        | IP_C:p_C  |IP_Ra:5684 |
-|                    --JPY[H(IP_C:p_C),-->  | IP_Rb:p_Rb|IP_S:5684  |
+|      --Finished-->                        | IP_P:p_P  |IP_Ja:5684 |
+|                    --JPY[H(IP_P:p_P),-->  | IP_Jb:p_Jb|IP_E:5684  |
 |                          C(Finished)]     |           |           |
-|                    <--JPY[H(IP_C:p_C),--  | IP_S:5684 |IP_Rb:p_Rb |
+|                    <--JPY[H(IP_P:p_P),--  | IP_E:5684 |IP_Jb:p_Jb |
 |                         C(Finished)]      |           |           |
-|      <--Finished--                        | IP_Ra:5684|IP_C:p_C   |
+|      <--Finished--                        | IP_Ja:5684|IP_P:p_P   |
 |              :                            |     :     |    :      |
 +-------------------------------------------+-----------+-----------+
-IP_C:p_C = Link-local IP address and port of the Pledge
-IP_S:5684 = IP address and coaps port of EST Server
-IP_Ra:5684 = Link-local IP address and coaps port of Join Proxy
-IP_Rb:p_Rb = IP address(can be same as IP_Ra) and port of Join Proxy
+IP_P:p_P = Link-local IP address and port of the Pledge
+IP_E:5684 = Global IP address and coaps port of EST Server
+IP_Ja:5684 = Link-local IP address and coaps port of Join Proxy
+IP_Jb:p_Jb = Global IP address and port of Join Proxy
 
-JPY[H(),C()] = Join ProxY message with header H and content C
+JPY[H(),C()] = Join Proxy message with header H and content C
 
 ]]></artwork></figure>
 
 </section>
-<section anchor="protocol" title="Protocol">
+<section anchor="stateless-message-structure" title="Stateless Message structure">
 
 <t>The JPY message is constructed as a payload with media-type application/multipart-core specified in <xref target="I-D.ietf-core-multipart-ct"/>. Header and Contents fields use different media formats:</t>
 
 <t><list style="numbers">
-  <t>header field: application/CBOR containing a CBOR array <xref target="RFC7049"/> with the pledge IPv6 Link Local address as a 16-byte binary value, the pledge's UDP port number, if different from 5684, as a CBOR integer, and the proxy's ifindex or other identifier for the physical port on which the pledge is connected.</t>
-  <t>Content field: Any of the media types specified in <xref target="I-D.ietf-ace-coap-est"/> dependent on the EST function that is requested:</t>
+  <t>header field: application/CBOR containing a CBOR array <xref target="RFC7049"/> with the pledge IPv6 Link Local address as a 16-byte binary value, the pledge's UDP port number, if different from 5684, as a CBOR integer, and the proxy's ifindex or other identifier for the physical port on which the pledge is connected. Header is not DTLS encrypted.</t>
+  <t>Content field: Any of the media types specified in <xref target="I-D.ietf-ace-coap-est"/> and <xref target="I-D.ietf-anima-constrained-voucher"/> dependent on the function that is requested:</t>
 </list></t>
 
 <figure><artwork><![CDATA[
  * application/pkcs7-mime; smime-type=server-generated-key
  * application/pkcs7-mime; smime-type=certs-only
- * application/pkcs7-mime; smime-type=CMC-request
- * application/pkcs7-mime; smime-type=CMC-response
+ * application/voucher-cms+cbor
+ * application/voucher-cose+cbor 
  * application/pkcs8
  * application/csrattrs
- * application/pkcs10   
+ * application/pkcs10 
+ * application/pkix-cert  
+]]></artwork></figure>
+
+<t>The content fields are DTLS encrypted. In CBOR diagnostic notation the payload JPY[H(IP_P:p_P), with cf is content-format of DTLS-content, will look like:</t>
+
+<figure><artwork><![CDATA[
+      [ 60: [IP_p, p_P, ident]
+        cf: h'DTLS-content']
 ]]></artwork></figure>
 
 <t>Examples are shown in <xref target="examples"/>.</t>
 
 </section>
+</section>
+<section anchor="comparison-of-stateless-and-statefull-modes" title="Comparison of stateless and statefull modes">
+
+<t>The stateful and stateless mode of operation for the Join Proxy have
+their advantages and disadvantages.  This section should enable to
+make a choice between the two modes based on the available device
+resources and network bandwidth.</t>
+
+<figure title="Comparison between stateful and stateless mode" align="left" anchor="fig-comparison"><artwork><![CDATA[
++-------------+----------------------------+------------------------+
+| Properties  |         Stateful mode      |     Stateless mode     |
++-------------+----------------------------+------------------------+
+| State       |The Join Proxy needs        | No information is      |
+| Information |additional storage to       | maintained by the Join |
+|             |maintain mapping between    | Proxy                  |
+|             |the address and port number |                        |
+|             |of the pledge and those     |                        |
+|             |of the EST-server.          |                        |
++-------------+----------------------------+------------------------+
+|Packet size  |The size of the forwarded   |Size of the forwarded   |
+|             |message is the same as the  |message is bigger than  | 
+|             |original message.           |the original,it includes|
+|             |                            |additional source and   |
+|             |                            |destination addresses.  |
++-------------+----------------------------+------------------------+
+|Specification|The Join Proxy needs        |New JPY message to      |
+|complexity   |additional functionality    |encapsulate DTLS message|
+|             |to maintain state           |The EST server          |
+|             |information, and modify     |and the Join Proxy      |
+|             |the source and destination  |have to understand the  |
+|             |addresses of the DTLS       |JPY message in order    |
+|             |handshake messages          |to process it.          |
++-------------+----------------------------+------------------------+
+]]></artwork></figure>
+
+</section>
 <section anchor="discovery" title="Discovery">
 
-<t>It is assumed that Join-Proxy seamlessly provides a coaps connection between Pledge and coaps EST-server. An additional Registrar is needed to connect the Pledge to an http EST server, see section 8 of <xref target="I-D.ietf-ace-coap-est"/>.</t>
+<t>It is assumed that Join Proxy seamlessly provides a coaps connection between Pledge and coaps EST-server. An additional Registrar is needed to connect the Pledge to an http EST server, see section 8 of <xref target="I-D.ietf-ace-coap-est"/>. In particular this section replaces section 4.2 of <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/>.</t>
 
-<t>The Discovery of the coaps EST server by the Join Proxy follows section 6 of <xref target="I-D.ietf-ace-coap-est"/>. The discovery of the Join-Proxy by the Pledge is an extension to the discovery described in section 4 of <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/>. In particular this section replaces section 4.2 of <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/>. Three discovery cases are discussed: coap discovery, 6tisch discovery and GRASP discovery.</t>
+<t>Three discovery cases are discussed: coap discovery, 6tisch discovery and GRASP discovery.</t>
 
-<section anchor="grasp-discovery" title="GRASP discovery">
+<section anchor="join-proxy-discovers-est-server" title="Join Proxy discovers EST server">
 
-<t>In the context of autonomous networks, discovery takes place via the GRASP protocol as described in <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/>. The port number is.</t>
+<section anchor="coap-discovery" title="Coap discovery">
 
-<figure><artwork><![CDATA[
-EDNote: to be specified
-]]></artwork></figure>
+<t>The discovery of the coaps EST server, using coap discovery, by the Join Proxy follows section 6 of <xref target="I-D.ietf-ace-coap-est"/>.</t>
+
+</section>
+<section anchor="autonomous-network" title="Autonomous Network">
+
+<t>In the context of autonomous networks, the Join Proxy uses the DULL GRASP M_FLOOD mechanism to announce itself. Section 4.1.1 of <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/> discusses this in more detail. The EST-server announces itself using ACP instance of GRASP using M_FLOOD messages. Autonomous Network Join Proxies MUST support GRASP discovery of EST-server as decribed in section 4.3 of <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/> .</t>
 
 </section>
 <section anchor="tisch-discovery" title="6tisch discovery">
@@ -271,28 +373,41 @@ EDNote: to be specified
 <t>The discovery of EST server by the pledge uses the enhanced beacons as discussed in <xref target="I-D.ietf-6tisch-enrollment-enhanced-beacon"/>.</t>
 
 </section>
-<section anchor="coaps-discovery" title="Coaps discovery">
+</section>
+<section anchor="pledge-discovers-join-proxy" title="Pledge discovers Join Proxy">
+
+<t>The pledge and Join Proxy are assumed to communicate via Link-Local addresses.</t>
+
+<section anchor="autonomous-network-1" title="Autonomous Network">
+
+<t>The pledge MUST listen for GRASP M_FLOOD <xref target="I-D.ietf-anima-grasp"/>
+ announcements of the objective: "AN_Proxy". See section
+ Section 4.1.1 <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/> for the details of the objective.</t>
+
+</section>
+<section anchor="coap-discovery-1" title="Coap discovery">
 
 <t>In the context of a coap network without Autonomous Network support, discovery follows the standard coap policy.
-The Pledge can discover a Join-Proxy by sending a link-local multicast message to ALL CoAP Nodes with address FF02::FD. Multiple or no nodes may respond. The handling of multiple responses and the absence of responses follow section 4 of <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/>.</t>
+The Pledge can discover a Join Proxy by sending a link-local multicast message to ALL CoAP Nodes with address FF02::FD. Multiple or no nodes may respond. The handling of multiple responses and the absence of responses follow section 4 of <xref target="I-D.ietf-anima-bootstrapping-keyinfra"/>.</t>
 
-<t>The presence and location of (path to) the join-proxy resource are discovered by
+<t>The presence and location of (path to) the Join Proxy resource are discovered by
 sending a GET request to "/.well-known/core" including a resource type (rt)
 parameter with the value "brski-proxy" <xref target="RFC6690"/>. Upon success, the return
-payload will contain the root resource of the Join-Proxy resources. It is up to the
+payload will contain the root resource of the Join Proxy resources. It is up to the
 implementation to choose its root resource; throughout this document the
-example root resource /est is used. The example below shows the discovery of
-the presence and location of voucher resources.</t>
+example root resource /jp is used. The example below shows the discovery of
+the presence and location of Join Proxy resources.</t>
 
 <figure><artwork><![CDATA[
   REQ: GET coap://[FF02::FD]/.well-known/core?rt=brski-proxy
 
   RES: 2.05 Content
-  </est>; rt="brski-proxy"
+  </jp>; rt="brski-proxy";ct=62
 ]]></artwork></figure>
 
-<t>Port numbers, not returned in the example, are assumed to be the default numbers 5683 and 5684 for coap and coaps respectively (sections 12.6 and 12.7 of <xref target="RFC7252"/>. Discoverable port numbers MAY be returned in the &lt;href&gt; of the payload.</t>
+<t>Port numbers, not returned in the example, are assumed to be the default numbers 5683 and 5684 for coap and coaps respectively (sections 12.6 and 12.7 of <xref target="RFC7252"/>. Discoverable port numbers MAY be returned in the &lt;href&gt; of the payload (see section 5.1 of <xref target="I-D.ietf-ace-coap-est"/>).</t>
 
+</section>
 </section>
 </section>
 <section anchor="security-considerations" title="Security Considerations">
@@ -311,7 +426,7 @@ protected, but that the communication is between the Proxy and a known registrar
 
 <figure><artwork><![CDATA[
   rt="brski-proxy". This EST resource is used to query and return 
-  the supported EST resource of a join-proxy placed between Pledge
+  the supported EST resource of a Join Proxy placed between Pledge
   and EST server.
 ]]></artwork></figure>
 
@@ -329,10 +444,23 @@ protected, but that the communication is between the Proxy and a known registrar
 </section>
 <section anchor="changelog" title="Changelog">
 
+<section anchor="to-02" title="01 to 02">
+
+<t><list style="symbols">
+  <t>extended the discovery section</t>
+  <t>removed inconsistencies from the the flow diagrams</t>
+  <t>Improved readability of the examples.</t>
+  <t>stateful configurations reduced to one</t>
+</list></t>
+
+</section>
 <section anchor="to-01" title="00 to 01">
 
 <t><list style="symbols">
-  <t>added Contributors section</t>
+  <t>Added Contributors section</t>
+  <t>Adapted content-formats to est-coaps formats</t>
+  <t>Aligned examples with est-coaps examples</t>
+  <t>Added statefull Proxy to stateless proxy</t>
 </list></t>
 
 </section>
@@ -361,6 +489,8 @@ protected, but that the communication is between the Proxy and a known registrar
 &I-D.ietf-ace-coap-est;
 &I-D.ietf-core-multipart-ct;
 &I-D.ietf-6tisch-enrollment-enhanced-beacon;
+&I-D.ietf-anima-constrained-voucher;
+&I-D.ietf-anima-grasp;
 
 
     </references>
@@ -400,56 +530,212 @@ protected, but that the communication is between the Proxy and a known registrar
     </references>
 
 
-<section anchor="examples" title="Example payloads">
+<section anchor="examples" title="Stateless Proxy payload examples">
 
-<t>Examples are extensions of two examples shown in <xref target="I-D.ietf-ace-coap-est"/>.</t>
+<t>Examples are extensions of two examples shown in <xref target="I-D.ietf-ace-coap-est"/>.
+The following content formats are used:</t>
+
+<t><list style="symbols">
+  <t>60:  application/cbor</t>
+  <t>62:  application/multipart</t>
+  <t>281: application/pkcs7-mime; smime-type=certs-only</t>
+  <t>284: application/pkcs8</t>
+  <t>286: application/pkcs10</t>
+</list></t>
+
+<t>For presentation purposes the payloads are abbreviated as follows:</t>
+
+<t>cacrts request payload:</t>
 
 <figure><artwork><![CDATA[
-EDNote: 
-provisional stake holder examples to be improved and corrected.
+   <cacrts request payload> = <empty>
+]]></artwork></figure>
+
+<t>cacrts response payload:</t>
+
+<figure><artwork><![CDATA[
+   <cacrts response payload> =
+   DTLS_encrypt(
+   3082027b06092a864886f70d010702a082026c308202680201013100300b
+   06092a864886f70d010701a082024e3082024a308201f0a0030201020209
+   009189bcdf9c99244b300a06082a8648ce3d0403023067310b3009060355
+   040613025553310b300906035504080c024341310b300906035504070c02
+   4c4131143012060355040a0c0b4578616d706c6520496e63311630140603
+   55040b0c0d63657274696669636174696f6e3110300e06035504030c0752
+   6f6f74204341301e170d3139303130373130343034315a170d3339303130
+   323130343034315a3067310b3009060355040613025553310b3009060355
+   04080c024341310b300906035504070c024c4131143012060355040a0c0b
+   4578616d706c6520496e6331163014060355040b0c0d6365727469666963
+   6174696f6e3110300e06035504030c07526f6f742043413059301306072a
+   8648ce3d020106082a8648ce3d03010703420004814994082b6e8185f3df
+   53f5e0bee698973335200023ddf78cd17a443ffd8ddd40908769c55652ac
+   2ccb75c4a50a7c7ddb7c22dae6c85cca538209fdbbf104c9a38184308181
+   301d0603551d0e041604142495e816ef6ffcaaf356ce4adffe33cf492abb
+   a8301f0603551d230418301680142495e816ef6ffcaaf356ce4adffe33cf
+   492abba8300f0603551d130101ff040530030101ff300e0603551d0f0101
+   ff040403020106301e0603551d1104173015811363657274696679406578
+   616d706c652e636f6d300a06082a8648ce3d0403020348003045022100da
+   e37c96f154c32ec0b4af52d46f3b7ecc9687ddf267bcec368f7b7f135327
+   2f022047a28ae5c7306163b3c3834bab3c103f743070594c089aaa0ac870
+   cd13b902caa1003100
+   )
+]]></artwork></figure>
+
+<t>serverkeygen request payload:</t>
+
+<figure><artwork><![CDATA[
+   <serverkeygen request payload> =
+   DTLS_encrypt(
+   3081cf3078020100301631143012060355040a0c0b736b67206578616d70
+   6c653059301306072a8648ce3d020106082a8648ce3d030107034200041b
+   b8c1117896f98e4506c03d70efbe820d8e38ea97e9d65d52c8460c5852c5
+   1dd89a61370a2843760fc859799d78cd33f3c1846e304f1717f8123f1a28
+   4cc99fa000300a06082a8648ce3d04030203470030440220387cd4e9cf62
+   8d4af77f92ebed4890d9d141dca86cd2757dd14cbd59cdf6961802202f24
+   5e828c77754378b66660a4977f113cacdaa0cc7bad7d1474a7fd155d090d
+   )
+]]></artwork></figure>
+
+<t>serverkeygen response payload:</t>
+
+<figure><artwork><![CDATA[
+   <serverkeygen response payload> =
+   DTLS_encrypt(
+   84                                   # array(4)
+   19 011C                              # unsigned(284)
+   58 8A                                # bytes(138)
+   308187020100301306072a8648ce3d020106082a8648ce3d030107046d30
+   6b02010104200b9a67785b65e07360b6d28cfc1d3f3925c0755799deeca7
+   45372b01697bd8a6a144034200041bb8c1117896f98e4506c03d70efbe82
+   0d8e38ea97e9d65d52c8460c5852c51dd89a61370a2843760fc859799d78
+   cd33f3c1846e304f1717f8123f1a284cc99f
+   19 0119                              # unsigned(281)
+   59 01D3                              # bytes(467)
+   308201cf06092a864886f70d010702a08201c0308201bc0201013100300b
+   06092a864886f70d010701a08201a23082019e30820143a0030201020208
+   126de8571518524b300a06082a8648ce3d04030230163114301206035504
+   0a0c0b736b67206578616d706c65301e170d313930313039303835373038
+   5a170d3339303130343038353730385a301631143012060355040a0c0b73
+   6b67206578616d706c653059301306072a8648ce3d020106082a8648ce3d
+   030107034200041bb8c1117896f98e4506c03d70efbe820d8e38ea97e9d6
+   5d52c8460c5852c51dd89a61370a2843760fc859799d78cd33f3c1846e30
+   4f1717f8123f1a284cc99fa37b307930090603551d1304023000302c0609
+   6086480186f842010d041f161d4f70656e53534c2047656e657261746564
+   204365727469666963617465301d0603551d0e04160414494be598dc8dbc
+   0dbc071c486b777460e5cce621301f0603551d23041830168014494be598
+   dc8dbc0dbc071c486b777460e5cce621300a06082a8648ce3d0403020349
+   003046022100a4b167d0f9add9202810e6bf6a290b8cfdfc9b9c9fea2cc1
+   c8fc3a464f79f2c202210081d31ba142751a7b4a34fd1a01fcfb08716b9e
+   b53bdaadc9ae60b08f52429c0fa1003100
+   )
 ]]></artwork></figure>
 
 <section anchor="cacerts" title="cacerts">
 
-<t>The request from Join-Proxy to EST-server looks like:</t>
+<t>The request from Join Proxy to EST-server looks like:</t>
 
 <figure><artwork><![CDATA[
-Get coaps://192.0.2.1/est/crts
-content format = 287
-payload =
-[60,[L-L IPv6, port, ident]]
+    Get coaps://192.0.2.1/est/crts
+    (Accept: 62)
+    (Content-format: 62)
+    payload =
+    82                    # array(2)
+    18 3C                 # unsigned(60)
+    83                    # array(3)
+    69                    # text(9)
+         464538303A3A414238 # "FE80::AB8"
+    19 237D               # unsigned(9085)
+    65                    # text(5)
+         6964656E74       # "ident"
 ]]></artwork></figure>
 
-<t>The response will then be</t>
+<t>In CBOR Diagnostic:</t>
 
 <figure><artwork><![CDATA[
- 2.05 Content
- content format = 287
- payload =
- [60, [L-L IPv6, port, ident], 281, <DTLS encoded certificate>]
+    payload = [60, ["FE80::AB8", 9085, "ident"]]
+]]></artwork></figure>
+
+<t>The response will then be:</t>
+
+<figure><artwork><![CDATA[
+     2.05 Content
+     (Content-format: 62)
+       Payload =
+     84                                # array(4)
+     18 3C                             # unsigned(60)
+     83                                # array(3)
+     69                                # text(9)
+         464538303A3A414238            # "FE80::AB8"
+     19 237D                           # unsigned(9085)
+     65                                # text(5)
+         6964656E74                    # "ident"
+     19 0119                           # unsigned(281)
+     59 027F                           # bytes(639)
+     <cacrts response payload>
+     ]
+]]></artwork></figure>
+
+<t>In CBOR diagnostic:</t>
+
+<figure><artwork><![CDATA[
+    payload = [60, ["FE80::AB8", 9085, "ident"], 
+               62, h'<cacrts response payload>']
 ]]></artwork></figure>
 
 </section>
 <section anchor="serverkeygen" title="serverkeygen">
 
-<t>The request from Join-Proxy to EST-server looks like:</t>
+<t>The request from Join Proxy to EST-server looks like:</t>
 
 <figure><artwork><![CDATA[
-Get coaps://192.0.2.1/est/skg
-content format = 287
-payload =
-[60,[L-L IPv6, port, ident], 286, <DTLS encoded request>]
+    Get coaps://192.0.2.1/est/skg
+    (Accept: 62)
+    (Content-Format: 62)
+      Payload =
+    83                                # array(4)
+    18 3C                             # unsigned(60)
+    83                                # array(3)
+    69                                # text(9)
+         464538303A3A414238           # "FE80::AB8"
+    19 237D                           # unsigned(9085)
+    65                                # text(5)
+         6964656E74                   # "ident"
+    19 011E                           # unsigned(286)
+    58 D2                             # bytes(210)
+    <serverkeygen request payload>
 ]]></artwork></figure>
 
-<t>The response will then be</t>
+<t>In CBOR diagnostic:</t>
 
 <figure><artwork><![CDATA[
- 2.05 Content
- content format = 287
- payload =
- [60, [L-L IPv6, port, ident], 
-  284, <DTLS encoded preamble>,
-  281, <DTLS encoded key>]
+    payload = [60, ["FE80::AB8", 9085, "ident"], 
+               286, h'<serverkeygen request payload>']
+]]></artwork></figure>
+
+<t>The response will then be:</t>
+
+<figure><artwork><![CDATA[
+     2.05 Content
+     (Content-format: 62)
+       Payload =
+     83                                # array(4)
+     18 3C                             # unsigned(60)
+     83                                # array(3)
+     69                                # text(9)
+         464538303A3A414238            # "FE80::AB8"
+     19 237D                           # unsigned(9085)
+     65                                # text(5)
+         6964656E74                    # "ident"
+     19 011E                           # unsigned(286)
+     59 0269                           # bytes(617)
+     <serverkeygen response payload>
+]]></artwork></figure>
+
+<t>In CBOR diagnostic:</t>
+
+<figure><artwork><![CDATA[
+    payload = [60, ["FE80::AB8", 9085, "ident"], 
+               286, h'<serverkeygen response payload>']
 ]]></artwork></figure>
 
 </section>
@@ -459,137 +745,209 @@ payload =
   </back>
 
 <!-- ##markdown-source:
-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
-gPSB+v8DVDatUXVAAAA=
+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
+fwOAjzW6fHAAAA==
 
 -->
 
