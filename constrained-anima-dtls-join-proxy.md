@@ -1,7 +1,7 @@
 ---
 title: Constrained Join Proxy for Bootstrapping Protocols
 abbrev: Join-Proxy
-docname: draft-vanderstok-anima-constrained-join-proxy-02
+docname: draft-vanderstok-anima-constrained-join-proxy-03
 
 # stand_alone: true
 
