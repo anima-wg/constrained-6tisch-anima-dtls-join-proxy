@@ -1,7 +1,7 @@
 ---
 title: Constrained Join Proxy for Bootstrapping Protocols
 abbrev: Join-Proxy
-docname: draft-vanderstok-constrained-anima-dtls-join-proxy-01
+docname: draft-vanderstok-anima-constrained-join-proxy-02
 
 # stand_alone: true
 
@@ -39,24 +39,13 @@ normative:
   RFC2119:
   RFC6347:
   RFC7049:
-  RFC7250:
-  RFC7950:
-  RFC5652:
-  RFC8152:
   RFC8366:
   I-D.ietf-anima-bootstrapping-keyinfra:
-  I-D.ietf-core-object-security:
-  I-D.ietf-ace-cbor-web-token:
   I-D.ietf-ace-coap-est:
   I-D.ietf-core-multipart-ct:
   I-D.ietf-6tisch-enrollment-enhanced-beacon:
-  ieee802-1AR:
-    target: "http://standards.ieee.org/findstds/standard/802.1AR-2009.html"
-    title: "IEEE 802.1AR Secure Device Identifier"
-    author:
-      ins: "IEEE Standard"
-    date: 2009
-
+  I-D.ietf-anima-constrained-voucher:
+  I-D.ietf-anima-grasp:
 informative:
   pledge:
     title: "Dictionary.com Unabridged"
@@ -88,9 +77,9 @@ informative:
 --- abstract
 
 This document defines a protocol to securely assign a pledge to an
-owner, using an intermediary node between pledge and owner.  This intermediary node is known as a "constrained-join-proxy".
+owner, using an intermediary node between pledge and owner.  This intermediary node is known as a "constrained Join Proxy".
 
-This document extends the work of {{I-D.ietf-anima-bootstrapping-keyinfra}} by replacing the Circuit-proxy by a stateless constrained join-proxy, that uses IP encapsulation.
+This document extends the work of [ietf-anima-bootstrapping-keyinfra] by replacing the Circuit-proxy by a stateless constrained Join Proxy, that transports routing information.
 
 
 --- middle
@@ -100,11 +89,11 @@ This document extends the work of {{I-D.ietf-anima-bootstrapping-keyinfra}} by r
 Enrolment of new nodes into constrained networks with constrained nodes
 present is described in
 {{I-D.ietf-anima-bootstrapping-keyinfra}} and makes use of Enrolment over Secure Transport (EST) <xref target= "RFC7030"/>. The specified solutions use https and may be too large in terms of
-code space or bandwidth required. Constrained devices in constrained networks {{RFC7228}} typically implement the IPv6 over Low-Power Wireless personal Area Networks (6LoWPAN) {{RFC4944}} and Constrained Application Protocol (CoAP) {{RFC7252}}.
+code space or bandwidth required. Constrained devices in constrained networks {{RFC7228}} typically implement the IPv6 over Low-Power Wireless personal Area Networks (6LoWPAN) {{RFC4944}} and Constrained Application Protocol (CoAP) {{RFC7252}}.  
 
 CoAP has chosen Datagram Transport Layer Security (DTLS) {{RFC6347}} as
 the preferred security protocol for authenticity and confidentiality
-of the messages. A constrained version of EST, using Coap and DTLS, is described in {{I-D.ietf-ace-coap-est}}.
+of the messages. A constrained version of EST, using Coap and DTLS, is described in {{I-D.ietf-ace-coap-est}}. 
 
 DTLS is a client-server protocol relying on the underlying IP layer
 to perform the routing between the DTLS Client and the DTLS Server.
@@ -116,7 +105,7 @@ to communicate with a neighbour node using neighbour discovery
 parameters.  However, before the device can receive these
 configuration parameters, it needs to authenticate itself to the network to which it connects. In {{I-D.ietf-anima-bootstrapping-keyinfra}} Enrolment over Secure Transport (EST) {{RFC7030}} is used to authenticate the joining device. However, IPv6 routing is necessary to establish a connection between joining device and the EST server.
 
-This document specifies a Join-proxy and protocol to act as intermediary between joining device and EST server to establish a connection between joining device and EST server.
+This document specifies a Join Proxy and protocol to act as intermediary between joining device and EST server to establish a connection between joining device and EST server.
 
 This document is very much inspired by text published earlier in {{I-D.kumar-dice-dtls-relay}}.
 
@@ -140,7 +129,7 @@ implementations.
 As depicted in the {{fig-net}}, the joining Device, or pledge (P), is more than one
 hop away from the EST server (E) and not yet authenticated into the
 network.  At this stage, it can only communicate one-hop to its
-nearest neighbour, the Join proxy (J) using their link-local IPv6 addresses.
+nearest neighbour, the Join Proxy (J) using their link-local IPv6 addresses.
 However, the Pledge (P) needs to communicate with end-to-end security
 with a Registrar hosting the EST server (E) to authenticate and get
 the relevant system/network parameters.  If the Pledge (P) initiates
@@ -150,13 +139,13 @@ since the Pledge (P) is not yet admitted to the network or there is
 no IP routability to Pledge (P) for any returned messages.
 
 ~~~~
-
-                      ++++
+                              
+                      ++++    
                       |E |----       +--+        +--+
                       |  |    \      |J |........|P |
                       ++++     \-----|  |        |  |
                    EST server        +--+        +--+
-                   REgistrar       Join Proxy   PLedge
+                   REgistrar       Join Proxy   Pledge
                                                 "Joining" Device
 
 ~~~~
@@ -166,19 +155,74 @@ Furthermore, the Pledge (P) may wish to establish a secure connection
 to the EST server (E) in the network assuming appropriate credentials
 are exchanged out-of-band, e.g. a hash of the Pledge (P)'s raw public
 key could be provided to the EST server (E).  However, the Pledge (P)
-is unaware of the IP address of the EST-server (E) to initiate a DTLS
+may be unaware of the IP address of the EST-server (E) to initiate a DTLS
 connection and perform authentication with.
 
-An DTLS connection is required between Pledge and EST server. To overcome the problems with non-routability of DTLS packets and/
+A DTLS connection is required between Pledge and EST server. To overcome the problems with non-routability of DTLS packets and/
 or discovery of the destination address of the EST Server to
-contact, the Join Proxy is introduced.  This Join-Proxy functionality is
+contact, the Join Proxy is introduced.  This Join Proxy functionality is
 configured into all authenticated devices in the network which may
 act as the Join Proxy for newly joining nodes.  The Join Proxy allows for routing of the packets from the Pledge using
-IP routing to the intended EST Server.
+IP routing to the intended EST Server. 
 
-# Join Proxy specification
+#Join Proxy specification
 
-In this section, the constrained Join Proxy functionality is specified using DTLS and coaps.  When a joining device as a client attempts a DTLS
+The Join Proxy can operate in two modes:
+
+  * Statefull mode
+  * Stateless mode
+
+
+## Statefull Join Proxy
+
+In stateful mode, the joining
+node forwards the DTLS
+messages to the EST Server. 
+
+Assume that the Pledge does not know the IP
+address of the EST Server it needs to contact. In that situation, the Join Proxy knows the (cofigured or discovered) IP
+address of a EST Server that the Pledge needs to contact.  The Pledge initiates its request
+as if the Join Proxy is the intended EST Server.  The Join Proxy
+changes the IP packet (without modifying the DTLS message) as
+in the previous case by modifying both the source and destination
+addresses to forward the message to the intended EST Server. The
+Join Proxy maintains a 4-tuple array to translate the
+DTLS messages received from the EST Server and forward it to the
+EST Client.  In {{fig-statefull2}} the various steps of the message flow are shown:
+
+~~~~
++------------+------------+-------------+--------------------------+
+| EST Client | Join Proxy | EST Server  |          Message         |
+|    (P)     |     (J)    |    (E)      | Src_IP:port | Dst_IP:port|
++------------+------------+-------------+-------------+------------+
+|      --ClientHello-->                 |   IP_P:p_P  | IP_Ja:5684 |
+|                    --ClientHello-->   |   IP_Jb:p_Jb| IP_E:5684  |
+|                                       |             |            | 
+|                    <--ServerHello--   |   IP_E:5684 | IP_Jb:p_Jb |
+|                            :          |             |            |
+|       <--ServerHello--     :          |   IP_Ja:5684| IP_P:p_P   |
+|               :            :          |             |            |
+|               :            :          |       :     |    :       |
+|               :            :          |       :     |    :       |
+|        --Finished-->       :          |   IP_P:p_P  | IP_Ja:5684 |
+|                      --Finished-->    |   IP_Jb:p_Jb| IP_E:5684  |
+|                                       |             |            |
+|                      <--Finished--    |   IP_E:5684 | IP_Jb:p_Jb |
+|        <--Finished--                  |   IP_Ja:5684| IP_P:p_P   |
+|              :             :          |      :      |     :      |
++---------------------------------------+-------------+------------+
+IP_P:p_P = Link-local IP address and port of Pledge (DTLS Client)
+IP_E:5684 = Global IP address and coaps port of EST Server
+IP_Ja:5684 = Link-local IP address and coaps port of Join Proxy
+IP_Jb:p_Rb = Global IP address and port of Join proxy
+~~~~
+{: #fig-statefull2 title='constrained statefull joining message flow with EST server address known to Join Proxy.' align="left"}
+
+## Stateless Join Proxy
+
+The Join Proxy is stateless to minimize the requirements on the constrained Join Proxy device.  
+
+When a joining device as a client attempts a DTLS
 connection to the EST server, it uses its link-local IP address as its IP source address.  This message is
 transmitted one-hop to a neighbour node.  Under normal circumstances,
 this message would be dropped at the neighbour node since the joining
@@ -188,8 +232,6 @@ the Join Proxy functionality enabled, it routes the DTLS message to a
 specific EST Server.  Additional security mechanisms need to exist
 to prevent this routing functionality being used by rogue nodes to
 bypass any network authentication procedures.
-
-The Join-proxy is stateless to minimize the requirements on the constrained Join-proxy device.
 
 If an untrusted DTLS Client that can only use link-local addressing wants to contact
  a trusted end-point EST Server, it sends the DTLS message to the Join Proxy. The Join Proxy extends this message into a new type of
@@ -210,102 +252,157 @@ If an untrusted DTLS Client that can only use link-local addressing wants to con
 
 On receiving the JPY message, the Join Proxy
 retrieves the two parts.  It uses the Header field to route the DTLS
-message retrieved from the Contents field to the joining node.
+message retrieved from the Contents field to the Pledge.
 
-The {{fig-join}} depicts the message flow diagram when the EST
-Server end-point address is known only to the Join Proxy:
+The {{fig-stateless}} depicts the message flow diagram:
 
 ~~~~
-
 +--------------+------------+---------------+-----------------------+
 | EST  Client  | Join Proxy |    EST server |        Message        |
 |     (P)      |     (J)    |      (E)      |Src_IP:port|Dst_IP:port|
 +--------------+------------+---------------+-----------+-----------+
-|      --ClientHello-->                     | IP_C:p_C  |IP_Ra:5684 |
-|                    --JPY[H(IP_C:p_C),-->  | IP_Rb:p_Rb|IP_S:5684  |
+|      --ClientHello-->                     | IP_P:p_P  |IP_Ja:5684 |
+|                    --JPY[H(IP_P:p_P),-->  | IP_Jb:p_Jb|IP_E:5684  |
 |                          C(ClientHello)]  |           |           |
-|                    <--JPY[H(IP_C:p_C),--  | IP_S:5684 |IP_Rb:p_Rb |
+|                    <--JPY[H(IP_P:p_P),--  | IP_E:5684 |IP_Jb:p_Jb |
 |                         C(ServerHello)]   |           |           |
-|      <--ServerHello--                     | IP_Ra:5684|IP_C:p_C   |
+|      <--ServerHello--                     | IP_Ja:5684|IP_P:p_P   |
 |              :                            |           |           |
 |              :                            |     :     |    :      |
 |                                           |     :     |    :      |
-|      --Finished-->                        | IP_C:p_C  |IP_Ra:5684 |
-|                    --JPY[H(IP_C:p_C),-->  | IP_Rb:p_Rb|IP_S:5684  |
+|      --Finished-->                        | IP_P:p_P  |IP_Ja:5684 |
+|                    --JPY[H(IP_P:p_P),-->  | IP_Jb:p_Jb|IP_E:5684  |
 |                          C(Finished)]     |           |           |
-|                    <--JPY[H(IP_C:p_C),--  | IP_S:5684 |IP_Rb:p_Rb |
+|                    <--JPY[H(IP_P:p_P),--  | IP_E:5684 |IP_Jb:p_Jb |
 |                         C(Finished)]      |           |           |
-|      <--Finished--                        | IP_Ra:5684|IP_C:p_C   |
+|      <--Finished--                        | IP_Ja:5684|IP_P:p_P   |
 |              :                            |     :     |    :      |
 +-------------------------------------------+-----------+-----------+
-IP_C:p_C = Link-local IP address and port of the Pledge
-IP_S:5684 = IP address and coaps port of EST Server
-IP_Ra:5684 = Link-local IP address and coaps port of Join Proxy
-IP_Rb:p_Rb = IP address(can be same as IP_Ra) and port of Join Proxy
+IP_P:p_P = Link-local IP address and port of the Pledge
+IP_E:5684 = Global IP address and coaps port of EST Server
+IP_Ja:5684 = Link-local IP address and coaps port of Join Proxy
+IP_Jb:p_Jb = Global IP address and port of Join Proxy
 
-JPY[H(),C()] = Join ProxY message with header H and content C
+JPY[H(),C()] = Join Proxy message with header H and content C
 
 ~~~~
-{: #fig-join title='constrained joining message flow.' align="left"}
+{: #fig-stateless title='constrained stateless joining message flow.' align="left"}
 
-# Protocol
+## Stateless Message structure
 
 The JPY message is constructed as a payload with media-type application/multipart-core specified in {{I-D.ietf-core-multipart-ct}}. Header and Contents fields use different media formats:
-
-   1. header field: application/CBOR containing a CBOR array with the pledge IPv6 Link Local address as a 16-byte binary value, the pledge's UDP port number, if different from 5684, as a CBOR integer, and the proxy's ifindex or other identifier for the physical port on which the pledge is connected.
-   2. Content field: Any of the media types specified {{I-D.ietf-ace-coap-est}} dependent on the EST function that is requested:
+	
+   1. header field: application/CBOR containing a CBOR array {{RFC7049}} with the pledge IPv6 Link Local address as a 16-byte binary value, the pledge's UDP port number, if different from 5684, as a CBOR integer, and the proxy's ifindex or other identifier for the physical port on which the pledge is connected. Header is not DTLS encrypted.
+   2. Content field: Any of the media types specified in {{I-D.ietf-ace-coap-est}} and {{I-D.ietf-anima-constrained-voucher}} dependent on the function that is requested:  
 
      * application/pkcs7-mime; smime-type=server-generated-key
      * application/pkcs7-mime; smime-type=certs-only
-     * application/pkcs7-mime; smime-type=CMC-request
-     * application/pkcs7-mime; smime-type=CMC-response
+     * application/voucher-cms+cbor
+     * application/voucher-cose+cbor 
      * application/pkcs8
      * application/csrattrs
-     * application/pkcs10
+     * application/pkcs10 
+     * application/pkix-cert  
 
-Examples are shown in {{examples}}.
+The content fields are DTLS encrypted. In CBOR diagnostic notation the payload JPY[H(IP_P:p_P), with cf is content-format of DTLS-content, will look like:
+
+~~~
+      [ 60: [IP_p, p_P, ident]
+        cf: h'DTLS-content']
+~~~
+
+Examples are shown in {{examples}}. 
+
+# Comparison of stateless and statefull modes
+
+The stateful and stateless mode of operation for the Join Proxy have
+their advantages and disadvantages.  This section should enable to
+make a choice between the two modes based on the available device
+resources and network bandwidth.
+
+~~~~
++-------------+----------------------------+------------------------+
+| Properties  |         Stateful mode      |     Stateless mode     |
++-------------+----------------------------+------------------------+
+| State       |The Join Proxy needs        | No information is      |
+| Information |additional storage to       | maintained by the Join |
+|             |maintain mapping between    | Proxy                  |
+|             |the address and port number |                        |
+|             |of the pledge and those     |                        |
+|             |of the EST-server.          |                        |
++-------------+----------------------------+------------------------+
+|Packet size  |The size of the forwarded   |Size of the forwarded   |
+|             |message is the same as the  |message is bigger than  | 
+|             |original message.           |the original,it includes|
+|             |                            |additional source and   |
+|             |                            |destination addresses.  |
++-------------+----------------------------+------------------------+
+|Specification|The Join Proxy needs        |New JPY message to      |
+|complexity   |additional functionality    |encapsulate DTLS message|
+|             |to maintain state           |The EST server          |
+|             |information, and modify     |and the Join Proxy      |
+|             |the source and destination  |have to understand the  |
+|             |addresses of the DTLS       |JPY message in order    |
+|             |handshake messages          |to process it.          |
++-------------+----------------------------+------------------------+
+~~~~
+{: #fig-comparison title='Comparison between stateful and stateless mode' align="left"}                            	
 
 #Discovery
 
-It is assumed that Join-Proxy seamlessly provides a coaps connection between Pledge and EST-server. An additional Registrar is needed to connect the Pledge to an http EST server, see section 8 of {{I-D.ietf-ace-coap-est}}.
+It is assumed that Join Proxy seamlessly provides a coaps connection between Pledge and coaps EST-server. An additional Registrar is needed to connect the Pledge to an http EST server, see section 8 of {{I-D.ietf-ace-coap-est}}. In particular this section replaces section 4.2 of {{I-D.ietf-anima-bootstrapping-keyinfra}}.
 
-The Discovery of the EST server by the Join Proxy follows section 6 of {{I-D.ietf-ace-coap-est}}. The discovery of the Join-Proxy by the Pledge is an extension to the discovery described in section 4 of {{I-D.ietf-anima-bootstrapping-keyinfra}}. In particular this section replaces section 4.2 of {{I-D.ietf-anima-bootstrapping-keyinfra}}. Three discover cases are discussed: coap discovery, 6tisch discovery and GRASP discovery.
+Three discovery cases are discussed: coap discovery, 6tisch discovery and GRASP discovery.
 
-##GRASP discovery
+## Join Proxy discovers EST server
 
-In the context of autonomous networks, discovery takes place vis the GRASP protocol as described in {{I-D.ietf-anima-bootstrapping-keyinfra}}. The port number is.
+### Coap discovery
 
-    EDNote: to be specified
+The discovery of the coaps EST server, using coap discovery, by the Join Proxy follows section 6 of {{I-D.ietf-ace-coap-est}}. 
 
-##6tisch discovery
+### Autonomous Network
+
+In the context of autonomous networks, the Join Proxy uses the DULL GRASP M_FLOOD mechanism to announce itself. Section 4.1.1 of {{I-D.ietf-anima-bootstrapping-keyinfra}} discusses this in more detail. The EST-server announces itself using ACP instance of GRASP using M_FLOOD messages. Autonomous Network Join Proxies MUST support GRASP discovery of EST-server as decribed in section 4.3 of {{I-D.ietf-anima-bootstrapping-keyinfra}} .
+
+### 6tisch discovery
 
 The discovery of EST server by the pledge uses the enhanced beacons as discussed in {{I-D.ietf-6tisch-enrollment-enhanced-beacon}}.
 
-## Coaps discovery
+## Pledge discovers Join Proxy
+
+The pledge and Join Proxy are assumed to communicate via Link-Local addresses.
+
+### Autonomous Network
+
+The pledge MUST listen for GRASP M_FLOOD {{I-D.ietf-anima-grasp}}
+ announcements of the objective: "AN_Proxy". See section
+ Section 4.1.1 {{I-D.ietf-anima-bootstrapping-keyinfra}} for the details of the objective.
+
+### Coap discovery
 
 In the context of a coap network without Autonomous Network support, discovery follows the standard coap policy.
-The Pledge can discover a Join-Proxy by sending a link-local multicast message to ALL CoAP Nodes with address FF02::FD. Multiple or no nodes may respond. The handling of multiple responses and the absence of responses follow section 4 of {{I-D.ietf-anima-bootstrapping-keyinfra}}.
+The Pledge can discover a Join Proxy by sending a link-local multicast message to ALL CoAP Nodes with address FF02::FD. Multiple or no nodes may respond. The handling of multiple responses and the absence of responses follow section 4 of {{I-D.ietf-anima-bootstrapping-keyinfra}}.
 
-The presence and location of (path to) the join-proxy resource are discovered by
-sending a GET request to "/.well-known/core" including a resource type (RT)
+The presence and location of (path to) the Join Proxy resource are discovered by
+sending a GET request to "/.well-known/core" including a resource type (rt)
 parameter with the value "brski-proxy" {{RFC6690}}. Upon success, the return
-payload will contain the root resource of the Join-Proxy resources. It is up to the
+payload will contain the root resource of the Join Proxy resources. It is up to the
 implementation to choose its root resource; throughout this document the
-example root resource /est is used. The example below shows the discovery of
-the presence and location of voucher resources.
+example root resource /jp is used. The example below shows the discovery of
+the presence and location of Join Proxy resources.
 
 ~~~~
   REQ: GET coap://[FF02::FD]/.well-known/core?rt=brski-proxy
 
   RES: 2.05 Content
-  </est>; rt="brski-proxy"
+  </jp>; rt="brski-proxy";ct=62
 ~~~~
 
-Port numbers, not returned in the example, are assumed to be the default numbers 5683 and 5684 for coap and coaps respectively (sections 12.6 and 12.7 of {{RFC7252}}. Discoverable port numbers MAY be returned in the &lt;href&gt; of the payload.
+Port numbers, not returned in the example, are assumed to be the default numbers 5683 and 5684 for coap and coaps respectively (sections 12.6 and 12.7 of {{RFC7252}}. Discoverable port numbers MAY be returned in the &lt;href&gt; of the payload (see section 5.1 of {{I-D.ietf-ace-coap-est}}).
 
 # Security Considerations
 
-It should be noted here that the contents of the CBOR map are not
+It should be noted here that the contents of the CBOR map are not	
 protected, but that the communication is between the Proxy and a known registrar (a connected UDP socket), and that messages from other origins are ignored.
 
 # IANA Considerations
@@ -316,60 +413,247 @@ This document needs to create a registry for key indices in the CBOR map.  It sh
 
 This specification registers a new Resource Type (rt=) Link Target Attributes in the "Resource Type (rt=) Link Target Attribute Values" subregistry under the "Constrained RESTful Environments (CoRE) Parameters" registry.
 
-      rt="brski-proxy". This EST resource is used to query and return
-      the supported EST resource of a join-proxy placed between Pledge
+      rt="brski-proxy". This EST resource is used to query and return 
+      the supported EST resource of a Join Proxy placed between Pledge
       and EST server.
-
+      
 
 # Acknowledgements
 
-Much of this text is inspired by {{I-D.kumar-dice-dtls-relay}}. Many thanks for the comments by Brian Carpenter.
+Many thanks for the comments by Brian Carpenter.
+
+# Contributors
+
+Sandeep Kumar, Sye loong Keoh, and Oscar Garcia-Morchon are the co-authors of the draft-kumar-dice-dtls-relay-02. Their draft has served as a basis for this document. Much text from their draft is copied over to this draft.
 
 # Changelog
 
+## 01 to 02
+
+   * extended the discovery section
+   * removed inconsistencies from the the flow diagrams 
+   * Improved readability of the examples.
+   * stateful configurations reduced to one
+
 ## 00 to 01
+
+   * Added Contributors section
+   * Adapted content-formats to est-coaps formats
+   * Aligned examples with est-coaps examples
+   * Added statefull Proxy to stateless proxy
+
+
+## 00 to 00
 
    * added payload examples in appendix
    * discovery for three cases: AN, 6tisch and coaps
 
 --- back
 
-#Example payloads {#examples}
+#Stateless Proxy payload examples {#examples}
 
 Examples are extensions of two examples shown in {{I-D.ietf-ace-coap-est}}.
+The following content formats are used:
 
-     EDNote; provisional stake holder examples to be improved and corrected.
+  * 60:  application/cbor
+  * 62:  application/multipart
+  * 281: application/pkcs7-mime; smime-type=certs-only
+  * 284: application/pkcs8
+  * 286: application/pkcs10
+
+
+For presentation purposes the payloads are abbreviated as follows:
+
+cacrts request payload:
+
+~~~
+   <cacrts request payload> = <empty>
+~~~
+
+cacrts response payload:
+
+~~~
+   <cacrts response payload> =
+   DTLS_encrypt(
+   3082027b06092a864886f70d010702a082026c308202680201013100300b
+   06092a864886f70d010701a082024e3082024a308201f0a0030201020209
+   009189bcdf9c99244b300a06082a8648ce3d0403023067310b3009060355
+   040613025553310b300906035504080c024341310b300906035504070c02
+   4c4131143012060355040a0c0b4578616d706c6520496e63311630140603
+   55040b0c0d63657274696669636174696f6e3110300e06035504030c0752
+   6f6f74204341301e170d3139303130373130343034315a170d3339303130
+   323130343034315a3067310b3009060355040613025553310b3009060355
+   04080c024341310b300906035504070c024c4131143012060355040a0c0b
+   4578616d706c6520496e6331163014060355040b0c0d6365727469666963
+   6174696f6e3110300e06035504030c07526f6f742043413059301306072a
+   8648ce3d020106082a8648ce3d03010703420004814994082b6e8185f3df
+   53f5e0bee698973335200023ddf78cd17a443ffd8ddd40908769c55652ac
+   2ccb75c4a50a7c7ddb7c22dae6c85cca538209fdbbf104c9a38184308181
+   301d0603551d0e041604142495e816ef6ffcaaf356ce4adffe33cf492abb
+   a8301f0603551d230418301680142495e816ef6ffcaaf356ce4adffe33cf
+   492abba8300f0603551d130101ff040530030101ff300e0603551d0f0101
+   ff040403020106301e0603551d1104173015811363657274696679406578
+   616d706c652e636f6d300a06082a8648ce3d0403020348003045022100da
+   e37c96f154c32ec0b4af52d46f3b7ecc9687ddf267bcec368f7b7f135327
+   2f022047a28ae5c7306163b3c3834bab3c103f743070594c089aaa0ac870
+   cd13b902caa1003100
+   )
+~~~
+
+serverkeygen request payload:
+
+~~~
+   <serverkeygen request payload> =
+   DTLS_encrypt(
+   3081cf3078020100301631143012060355040a0c0b736b67206578616d70
+   6c653059301306072a8648ce3d020106082a8648ce3d030107034200041b
+   b8c1117896f98e4506c03d70efbe820d8e38ea97e9d65d52c8460c5852c5
+   1dd89a61370a2843760fc859799d78cd33f3c1846e304f1717f8123f1a28
+   4cc99fa000300a06082a8648ce3d04030203470030440220387cd4e9cf62
+   8d4af77f92ebed4890d9d141dca86cd2757dd14cbd59cdf6961802202f24
+   5e828c77754378b66660a4977f113cacdaa0cc7bad7d1474a7fd155d090d
+   )
+~~~
+
+serverkeygen response payload:
+
+~~~
+   <serverkeygen response payload> =
+   DTLS_encrypt(
+   84                                   # array(4)
+   19 011C                              # unsigned(284)
+   58 8A                                # bytes(138)
+   308187020100301306072a8648ce3d020106082a8648ce3d030107046d30
+   6b02010104200b9a67785b65e07360b6d28cfc1d3f3925c0755799deeca7
+   45372b01697bd8a6a144034200041bb8c1117896f98e4506c03d70efbe82
+   0d8e38ea97e9d65d52c8460c5852c51dd89a61370a2843760fc859799d78
+   cd33f3c1846e304f1717f8123f1a284cc99f
+   19 0119                              # unsigned(281)
+   59 01D3                              # bytes(467)
+   308201cf06092a864886f70d010702a08201c0308201bc0201013100300b
+   06092a864886f70d010701a08201a23082019e30820143a0030201020208
+   126de8571518524b300a06082a8648ce3d04030230163114301206035504
+   0a0c0b736b67206578616d706c65301e170d313930313039303835373038
+   5a170d3339303130343038353730385a301631143012060355040a0c0b73
+   6b67206578616d706c653059301306072a8648ce3d020106082a8648ce3d
+   030107034200041bb8c1117896f98e4506c03d70efbe820d8e38ea97e9d6
+   5d52c8460c5852c51dd89a61370a2843760fc859799d78cd33f3c1846e30
+   4f1717f8123f1a284cc99fa37b307930090603551d1304023000302c0609
+   6086480186f842010d041f161d4f70656e53534c2047656e657261746564
+   204365727469666963617465301d0603551d0e04160414494be598dc8dbc
+   0dbc071c486b777460e5cce621301f0603551d23041830168014494be598
+   dc8dbc0dbc071c486b777460e5cce621300a06082a8648ce3d0403020349
+   003046022100a4b167d0f9add9202810e6bf6a290b8cfdfc9b9c9fea2cc1
+   c8fc3a464f79f2c202210081d31ba142751a7b4a34fd1a01fcfb08716b9e
+   b53bdaadc9ae60b08f52429c0fa1003100
+   )
+~~~
 
 ##cacerts
 
-The request from Join-Proxy to EST-server looks like:
+The request from Join Proxy to EST-server looks like:
 
+~~~
     Get coaps://192.0.2.1/est/crts
-    content format = 287
+    (Accept: 62)
+    (Content-format: 62)
     payload =
-    [60,[L-L IPv6, port, ident]]
+    82                    # array(2)
+    18 3C                 # unsigned(60)
+    83                    # array(3)
+    69                    # text(9)
+         464538303A3A414238 # "FE80::AB8"
+    19 237D               # unsigned(9085)
+    65                    # text(5)
+         6964656E74       # "ident"
+~~~
 
-The response will then be
+In CBOR Diagnostic:
 
+~~~
+    payload = [60, ["FE80::AB8", 9085, "ident"]]
+~~~
+
+The response will then be:
+
+~~~
      2.05 Content
-     content format = 287
-     payload =
-     [60, [L-L IPv6, port, ident], 281, <DTLS encoded certificate>]
+     (Content-format: 62)
+       Payload =
+     84                                # array(4)
+     18 3C                             # unsigned(60)
+     83                                # array(3)
+     69                                # text(9)
+         464538303A3A414238            # "FE80::AB8"
+     19 237D                           # unsigned(9085)
+     65                                # text(5)
+         6964656E74                    # "ident"
+     19 0119                           # unsigned(281)
+     59 027F                           # bytes(639)
+     <cacrts response payload>
+     ]
+~~~
+
+In CBOR diagnostic:
+
+~~~
+    payload = [60, ["FE80::AB8", 9085, "ident"], 
+               62, h'<cacrts response payload>']
+~~~
 
 ##serverkeygen
 
-The request from Join-Proxy to EST-server looks like:
+The request from Join Proxy to EST-server looks like:
 
+~~~
     Get coaps://192.0.2.1/est/skg
-    content format = 287
-    payload =
-    [60,[L-L IPv6, port, ident], 286, <DTLS encoded request>]
+    (Accept: 62)
+    (Content-Format: 62)
+      Payload =
+    83                                # array(4)
+    18 3C                             # unsigned(60)
+    83                                # array(3)
+    69                                # text(9)
+         464538303A3A414238           # "FE80::AB8"
+    19 237D                           # unsigned(9085)
+    65                                # text(5)
+         6964656E74                   # "ident"
+    19 011E                           # unsigned(286)
+    58 D2                             # bytes(210)
+    <serverkeygen request payload>
+~~~
 
-The response will then be
+In CBOR diagnostic:
 
+~~~
+    payload = [60, ["FE80::AB8", 9085, "ident"], 
+               286, h'<serverkeygen request payload>']
+~~~
+
+The response will then be:
+
+~~~
      2.05 Content
-     content format = 287
-     payload =
-     [60, [L-L IPv6, port, ident],
-      284, <DTLS encoded preamble>,
-      281, <DTLS encoded key>]
+     (Content-format: 62)
+       Payload =
+     83                                # array(4)
+     18 3C                             # unsigned(60)
+     83                                # array(3)
+     69                                # text(9)
+         464538303A3A414238            # "FE80::AB8"
+     19 237D                           # unsigned(9085)
+     65                                # text(5)
+         6964656E74                    # "ident"
+     19 011E                           # unsigned(286)
+     59 0269                           # bytes(617)
+     <serverkeygen response payload>
+~~~
+
+In CBOR diagnostic:
+
+~~~
+    payload = [60, ["FE80::AB8", 9085, "ident"], 
+               286, h'<serverkeygen response payload>']
+~~~
+
+
