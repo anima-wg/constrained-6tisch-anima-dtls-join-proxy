@@ -354,9 +354,11 @@ It is assumed that Join Proxy seamlessly provides a coaps connection between Ple
 
 Three discovery cases are discussed: coap discovery, 6tisch discovery and GRASP discovery.
 
-## Join Proxy discovers EST server
+## Pledge discovery of Join Proxy
 
-### Coap discovery
+The pledge and Join Proxy are assumed to communicate via Link-Local addresses.
+
+### CoAP discovery
 
 The discovery of the coaps EST server, using coap discovery, by the Join Proxy follows section 6 of {{I-D.ietf-ace-coap-est}}. 
 
@@ -368,9 +370,7 @@ In the context of autonomous networks, the Join Proxy uses the DULL GRASP M_FLOO
 
 The discovery of EST server by the pledge uses the enhanced beacons as discussed in {{I-D.ietf-6tisch-enrollment-enhanced-beacon}}.
 
-## Pledge discovers Join Proxy
-
-The pledge and Join Proxy are assumed to communicate via Link-Local addresses.
+## Join Proxy discovers EST server
 
 ### Autonomous Network
 
@@ -378,7 +378,7 @@ The pledge MUST listen for GRASP M_FLOOD {{I-D.ietf-anima-grasp}}
  announcements of the objective: "AN_Proxy". See section
  Section 4.1.1 {{I-D.ietf-anima-bootstrapping-keyinfra}} for the details of the objective.
 
-### Coap discovery
+### CoAP discovery
 
 In the context of a coap network without Autonomous Network support, discovery follows the standard coap policy.
 The Pledge can discover a Join Proxy by sending a link-local multicast message to ALL CoAP Nodes with address FF02::FD. Multiple or no nodes may respond. The handling of multiple responses and the absence of responses follow section 4 of {{I-D.ietf-anima-bootstrapping-keyinfra}}.
