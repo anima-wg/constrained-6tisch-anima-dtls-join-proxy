@@ -7,6 +7,7 @@ ${DRAFT}-${VERSION}.txt: ${DRAFT}.txt
 
 %.xml: %.md
 	kramdown-rfc2629 ${DRAFT}.md | ./insert-figures >${DRAFT}.xml
+	xml2rfc --v2v3 ${DRAFT}.xml && mv ${DRAFT}.v2v3.xml ${DRAFT}.xml
 	: git add ${DRAFT}.xml
 
 %.txt: %.xml
