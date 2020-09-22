@@ -5,14 +5,14 @@
 anima Working Group                                        M. Richardson
 Internet-Draft                                  Sandelman Software Works
 Intended status: Standards Track                         P. van der Stok
-Expires: September 15, 2020                       vanderstok consultancy
+Expires: 26 March 2021                            vanderstok consultancy
                                                            P. Kampanakis
                                                            Cisco Systems
-                                                          March 14, 2020
+                                                       22 September 2020
 
 
            Constrained Join Proxy for Bootstrapping Protocols
-            draft-vanderstok-anima-constrained-join-proxy-03
+            draft-vanderstok-anima-constrained-join-proxy-04
 
 Abstract
 
@@ -20,9 +20,11 @@ Abstract
    owner, using an intermediary node between pledge and owner.  This
    intermediary node is known as a "constrained Join Proxy".
 
-   This document extends the work of [ietf-anima-bootstrapping-keyinfra]
-   by replacing the Circuit-proxy by a stateless constrained Join Proxy,
-   that transports routing information.
+   This document extends the work of
+   [I-D.ietf-anima-bootstrapping-keyinfra] by replacing the Circuit-
+   proxy by a stateless constrained (CoAP) Join Proxy.  It transports
+   join traffic from the pledge to the Registrar without requiring per-
+   client state.
 
 Status of This Memo
 
@@ -39,90 +41,99 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on September 15, 2020.
+   This Internet-Draft will expire on 26 March 2021.
 
 Copyright Notice
 
    Copyright (c) 2020 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
-   This document is subject to BCP 78 and the IETF Trust's Legal
-   Provisions Relating to IETF Documents
-   (https://trustee.ietf.org/license-info) in effect on the date of
-   publication of this document.  Please review these documents
 
 
 
-Richardson, et al.     Expires September 15, 2020               [Page 1]
+
+
+Richardson, et al.        Expires 26 March 2021                 [Page 1]
 
-Internet-Draft                 Join-Proxy                     March 2020
+Internet-Draft                 Join-Proxy                 September 2020
 
 
-   carefully, as they describe your rights and restrictions with respect
-   to this document.  Code Components extracted from this document must
-   include Simplified BSD License text as described in Section 4.e of
-   the Trust Legal Provisions and are provided without warranty as
-   described in the Simplified BSD License.
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Simplified BSD License text
+   as described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Simplified BSD License.
 
 Table of Contents
 
-   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
-   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
-   3.  Requirements Language . . . . . . . . . . . . . . . . . . . .   3
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
+   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   4
+   3.  Requirements Language . . . . . . . . . . . . . . . . . . . .   4
    4.  Join Proxy functionality  . . . . . . . . . . . . . . . . . .   4
-   5.  Join Proxy specification  . . . . . . . . . . . . . . . . . .   4
+   5.  Join Proxy specification  . . . . . . . . . . . . . . . . . .   5
      5.1.  Statefull Join Proxy  . . . . . . . . . . . . . . . . . .   5
      5.2.  Stateless Join Proxy  . . . . . . . . . . . . . . . . . .   6
-     5.3.  Stateless Message structure . . . . . . . . . . . . . . .   7
-   6.  Comparison of stateless and statefull modes . . . . . . . . .   8
-   7.  Discovery . . . . . . . . . . . . . . . . . . . . . . . . . .   9
-     7.1.  Join Proxy discovers EST server . . . . . . . . . . . . .   9
-       7.1.1.  Coap discovery  . . . . . . . . . . . . . . . . . . .   9
-       7.1.2.  Autonomous Network  . . . . . . . . . . . . . . . . .  10
-       7.1.3.  6tisch discovery  . . . . . . . . . . . . . . . . . .  10
-     7.2.  Pledge discovers Join Proxy . . . . . . . . . . . . . . .  10
-       7.2.1.  Autonomous Network  . . . . . . . . . . . . . . . . .  10
-       7.2.2.  Coap discovery  . . . . . . . . . . . . . . . . . . .  10
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  11
-   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  11
-     9.1.  Resource Type registry  . . . . . . . . . . . . . . . . .  11
-   10. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  11
-   11. Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  11
-   12. Changelog . . . . . . . . . . . . . . . . . . . . . . . . . .  12
-     12.1.  01 to 02 . . . . . . . . . . . . . . . . . . . . . . . .  12
-     12.2.  00 to 01 . . . . . . . . . . . . . . . . . . . . . . . .  12
-     12.3.  00 to 00 . . . . . . . . . . . . . . . . . . . . . . . .  12
-   13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  12
-     13.1.  Normative References . . . . . . . . . . . . . . . . . .  12
-     13.2.  Informative References . . . . . . . . . . . . . . . . .  13
-   Appendix A.  Stateless Proxy payload examples . . . . . . . . . .  14
-     A.1.  cacerts . . . . . . . . . . . . . . . . . . . . . . . . .  16
-     A.2.  serverkeygen  . . . . . . . . . . . . . . . . . . . . . .  17
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  18
+     5.3.  Stateless Message structure . . . . . . . . . . . . . . .   8
+   6.  Comparison of stateless and statefull modes . . . . . . . . .   9
+   7.  Discovery . . . . . . . . . . . . . . . . . . . . . . . . . .  10
+     7.1.  Pledge discovery of Join Proxy  . . . . . . . . . . . . .  10
+       7.1.1.  CoAP discovery  . . . . . . . . . . . . . . . . . . .  10
+       7.1.2.  Autonomous Network  . . . . . . . . . . . . . . . . .  11
+       7.1.3.  6tisch discovery  . . . . . . . . . . . . . . . . . .  11
+     7.2.  Join Proxy discovers EST server . . . . . . . . . . . . .  11
+       7.2.1.  Autonomous Network  . . . . . . . . . . . . . . . . .  11
+       7.2.2.  CoAP discovery  . . . . . . . . . . . . . . . . . . .  11
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  12
+   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  12
+     9.1.  Resource Type registry  . . . . . . . . . . . . . . . . .  12
+   10. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  12
+   11. Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  13
+   12. Changelog . . . . . . . . . . . . . . . . . . . . . . . . . .  13
+     12.1.  01 to 02 . . . . . . . . . . . . . . . . . . . . . . . .  13
+     12.2.  00 to 01 . . . . . . . . . . . . . . . . . . . . . . . .  13
+     12.3.  00 to 00 . . . . . . . . . . . . . . . . . . . . . . . .  13
+   13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  13
+     13.1.  Normative References . . . . . . . . . . . . . . . . . .  13
+     13.2.  Informative References . . . . . . . . . . . . . . . . .  15
+   Appendix A.  Stateless Proxy payload examples . . . . . . . . . .  16
+     A.1.  cacerts . . . . . . . . . . . . . . . . . . . . . . . . .  18
+     A.2.  serverkeygen  . . . . . . . . . . . . . . . . . . . . . .  19
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  20
+
+
+
+
+
+
+
+Richardson, et al.        Expires 26 March 2021                 [Page 2]
+
+Internet-Draft                 Join-Proxy                 September 2020
+
 
 1.  Introduction
 
    Enrolment of new nodes into constrained networks with constrained
    nodes present is described in [I-D.ietf-anima-bootstrapping-keyinfra]
-   and makes use of Enrolment over Secure Transport (EST) [RFC7030].
+   ("BRSKI") and makes use of Enrolment over Secure Transport (EST)
+   [RFC7030] with [RFC8366] vouchers to securely enroll devices.  BRSKI
+   connects new devices ("pledges") to extended EST servers
+   ("Registrars") via a Join Proxy.
+
    The specified solutions use https and may be too large in terms of
-
-
-
-Richardson, et al.     Expires September 15, 2020               [Page 2]
-
-Internet-Draft                 Join-Proxy                     March 2020
-
-
    code space or bandwidth required.  Constrained devices in constrained
    networks [RFC7228] typically implement the IPv6 over Low-Power
    Wireless personal Area Networks (6LoWPAN) [RFC4944] and Constrained
    Application Protocol (CoAP) [RFC7252].
 
-   CoAP has chosen Datagram Transport Layer Security (DTLS) [RFC6347] as
-   the preferred security protocol for authenticity and confidentiality
-   of the messages.  A constrained version of EST, using Coap and DTLS,
-   is described in [I-D.ietf-ace-coap-est].
+   CoAP can be run with the Datagram Transport Layer Security (DTLS)
+   [RFC6347] as a security protocol for authenticity and confidentiality
+   of the messages.  This is described as the "coaps" scheme.  A
+   constrained version of EST, using Coap and DTLS, is described in
+   [I-D.ietf-ace-coap-est].
 
    DTLS is a client-server protocol relying on the underlying IP layer
    to perform the routing between the DTLS Client and the DTLS Server.
@@ -132,18 +143,32 @@ Internet-Draft                 Join-Proxy                     March 2020
    neighbour node using neighbour discovery [RFC6775] until it receives
    the necessary network configuration parameters.  However, before the
    device can receive these configuration parameters, it needs to
-   authenticate itself to the network to which it connects.  In
-   [I-D.ietf-anima-bootstrapping-keyinfra] Enrolment over Secure
-   Transport (EST) [RFC7030] is used to authenticate the joining device.
-   However, IPv6 routing is necessary to establish a connection between
-   joining device and the EST server.
+   authenticate itself to the network to which it connects.  IPv6
+   routing is necessary to establish a connection between joining device
+   and the extended EST server.
 
-   This document specifies a Join Proxy and protocol to act as
-   intermediary between joining device and EST server to establish a
+   This document specifies a new form of Join Proxy and protocol to act
+   as intermediary between joining device and EST server to establish a
    connection between joining device and EST server.
 
    This document is very much inspired by text published earlier in
    [I-D.kumar-dice-dtls-relay].
+   [I-D.richardson-anima-state-for-joinrouter] outlined the various
+   options for building a join proxy.
+   [I-D.ietf-anima-bootstrapping-keyinfra] adopted only the Circuit
+   Proxy method (1), leaving the other methods as future work.  The
+   document standardizes the CoAP/DTLS (method 4).
+
+
+
+
+
+
+
+Richardson, et al.        Expires 26 March 2021                 [Page 3]
+
+Internet-Draft                 Join-Proxy                 September 2020
+
 
 2.  Terminology
 
@@ -154,48 +179,37 @@ Internet-Draft                 Join-Proxy                     March 2020
 
 3.  Requirements Language
 
-   In this document, the key words "MUST", "MUST NOT", "REQUIRED",
-   "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY",
-   and "OPTIONAL" are to be interpreted as described in BCP 14, RFC 2119
-   [RFC2119] and indicate requirement levels for compliant STuPiD
-   implementations.
-
-
-
-
-
-
-Richardson, et al.     Expires September 15, 2020               [Page 3]
-
-Internet-Draft                 Join-Proxy                     March 2020
-
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
 
 4.  Join Proxy functionality
 
-   As depicted in the Figure 1, the joining Device, or pledge (P), is
-   more than one hop away from the EST server (E) and not yet
-   authenticated into the network.  At this stage, it can only
-   communicate one-hop to its nearest neighbour, the Join Proxy (J)
-   using their link-local IPv6 addresses.  However, the Pledge (P) needs
-   to communicate with end-to-end security with a Registrar hosting the
-   EST server (E) to authenticate and get the relevant system/network
-   parameters.  If the Pledge (P) initiates a DTLS connection to the EST
-   server whose IP address has been pre-configured, then the packets are
-   dropped at the Join Proxy (J) since the Pledge (P) is not yet
-   admitted to the network or there is no IP routability to Pledge (P)
-   for any returned messages.
+   As depicted in the Figure 1, the joining Device, or pledge (P), in an
+   LLN mesh is more than one hop away from the EST server (E) and not
+   yet authenticated into the network.
 
+   At this stage, it can only communicate one-hop to its nearest
+   neighbour, the Join Proxy (J) using their link-local IPv6 addresses.
+   However, the Pledge (P) needs to communicate with end-to-end security
+   with a Registrar hosting the EST server (E) to authenticate and get
+   the relevant system/network parameters.  If the Pledge (P) initiates
+   a DTLS connection to the EST server whose IP address has been pre-
+   configured, then the packets are dropped at the Join Proxy (J) since
+   the Pledge (P) is not yet admitted to the network or there is no IP
+   routability to Pledge (P) for any returned messages.
 
-                         ++++
-                         |E |----       +--+        +--+
-                         |  |    \      |J |........|P |
-                         ++++     \-----|  |        |  |
-                      EST server        +--+        +--+
-                      REgistrar       Join Proxy   Pledge
-                                                   "Joining" Device
+             ++++ multi-hop
+             |E |---- mesh  +--+        +--+
+             |  |    \      |J |........|P |
+             ++++     \-----|  |        |  |
+          EST server        +--+        +--+
+          Registrar       Join Proxy   Pledge
+                                       "Joining" Device
 
-
-                      Figure 1: multi-hop enrolment.
+                       Figure 1: multi-hop enrolment.
 
    Furthermore, the Pledge (P) may wish to establish a secure connection
    to the EST server (E) in the network assuming appropriate credentials
@@ -204,8 +218,16 @@ Internet-Draft                 Join-Proxy                     March 2020
    may be unaware of the IP address of the EST-server (E) to initiate a
    DTLS connection and perform authentication with.
 
+
+
+
+Richardson, et al.        Expires 26 March 2021                 [Page 4]
+
+Internet-Draft                 Join-Proxy                 September 2020
+
+
    A DTLS connection is required between Pledge and EST server.  To
-   overcome the problems with non-routability of DTLS packets and/ or
+   overcome the problems with non-routability of DTLS packets and/or
    discovery of the destination address of the EST Server to contact,
    the Join Proxy is introduced.  This Join Proxy functionality is
    configured into all authenticated devices in the network which may
@@ -215,35 +237,50 @@ Internet-Draft                 Join-Proxy                     March 2020
 
 5.  Join Proxy specification
 
-   The Join Proxy can operate in two modes:
+   A Join Proxy can operate in two modes:
 
-   o  Statefull mode
+   *  Statefull mode
 
-
-
-Richardson, et al.     Expires September 15, 2020               [Page 4]
-
-Internet-Draft                 Join-Proxy                     March 2020
-
-
-   o  Stateless mode
+   *  Stateless mode
 
 5.1.  Statefull Join Proxy
 
    In stateful mode, the joining node forwards the DTLS messages to the
-   EST Server.
+   BRSKI Registrar.
 
    Assume that the Pledge does not know the IP address of the EST Server
-   it needs to contact.  In that situation, the Join Proxy knows the
-   (cofigured or discovered) IP address of a EST Server that the Pledge
-   needs to contact.  The Pledge initiates its request as if the Join
-   Proxy is the intended EST Server.  The Join Proxy changes the IP
-   packet (without modifying the DTLS message) as in the previous case
-   by modifying both the source and destination addresses to forward the
-   message to the intended EST Server.  The Join Proxy maintains a
-   4-tuple array to translate the DTLS messages received from the EST
-   Server and forward it to the EST Client.  In Figure 2 the various
-   steps of the message flow are shown:
+   it needs to contact.  In that situation, the Join Proxy must know the
+   (configured or discovered) IP address of a BRSKI Registrar.
+   (Discovery can be based upon [I-D.ietf-anima-bootstrapping-keyinfra]
+   section 4.3, or via DNS-SD service discovery [RFC6763]) The Pledge
+   initiates its request as if the Join Proxy is the intended Registrar.
+   The Join Proxy changes the IP packet (without modifying the DTLS
+   message) as in the previous case by modifying both the source and
+   destination addresses to forward the message to the intended EST
+   Server.  The Join Proxy maintains a 4-tuple array to translate the
+   DTLS messages received from the EST Server and forward it to the EST
+   Client.  This is a form of Network Address translation, where the
+   Join Proxy acts as a forward proxy.  In Figure 2 the various steps of
+   the message flow are shown:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Richardson, et al.        Expires 26 March 2021                 [Page 5]
+
+Internet-Draft                 Join-Proxy                 September 2020
+
 
    +------------+------------+-------------+--------------------------+
    | EST Client | Join Proxy | EST Server  |          Message         |
@@ -270,55 +307,64 @@ Internet-Draft                 Join-Proxy                     March 2020
    IP_Ja:5684 = Link-local IP address and coaps port of Join Proxy
    IP_Jb:p_Rb = Global IP address and port of Join proxy
 
-   Figure 2: constrained statefull joining message flow with EST server
-                       address known to Join Proxy.
-
-
-
-
-
-Richardson, et al.     Expires September 15, 2020               [Page 5]
-
-Internet-Draft                 Join-Proxy                     March 2020
-
+       Figure 2: constrained statefull joining message flow with EST
+                    server address known to Join Proxy.
 
 5.2.  Stateless Join Proxy
 
    The Join Proxy is stateless to minimize the requirements on the
-   constrained Join Proxy device.
+   constrained Join Proxy device.  Stateless operation requires no
+   memory in the Join Proxy device, but may also reduce the CPU impact
+   as the device does not need to search through a state table.
 
    When a joining device as a client attempts a DTLS connection to the
    EST server, it uses its link-local IP address as its IP source
-   address.  This message is transmitted one-hop to a neighbour node.
-   Under normal circumstances, this message would be dropped at the
-   neighbour node since the joining device is not yet IP routable or it
-   is not yet authenticated to send messages through the network.
-   However, if the neighbour device has the Join Proxy functionality
-   enabled, it routes the DTLS message to a specific EST Server.
-   Additional security mechanisms need to exist to prevent this routing
-   functionality being used by rogue nodes to bypass any network
-   authentication procedures.
+   address.  This message is transmitted one-hop to a neighbouring (join
+   proxy) node.  Under normal circumstances, this message would be
+   dropped at the neighbour node since the joining device is not yet IP
+   routable or it is not yet authenticated to send messages through the
+   network.  However, if the neighbour device has the Join Proxy
+   functionality enabled, it routes the DTLS message to a specific
+   Registrar.  Additional security mechanisms need to exist to prevent
+   this routing functionality being used by rogue nodes to bypass any
+   network authentication procedures.
+
+
+
+
+
+Richardson, et al.        Expires 26 March 2021                 [Page 6]
+
+Internet-Draft                 Join-Proxy                 September 2020
+
 
    If an untrusted DTLS Client that can only use link-local addressing
-   wants to contact a trusted end-point EST Server, it sends the DTLS
-   message to the Join Proxy.  The Join Proxy extends this message into
-   a new type of message called Join ProxY (JPY) message and sends it on
-   to the EST server.  The JPY message payload consists of two parts:
+   wants to contact a trusted end-point Registrar, it sends the DTLS
+   message to the Join Proxy.
 
-   o  Header (H) field: consisting of the source link-local address and
+   The Join Proxy extends this message into a new type of message called
+   Join ProxY (JPY) message and sends it on to the Registrar.
+
+   The JPY message payload consists of two parts:
+
+   *  Header (H) field: consisting of the source link-local address and
       port of the Pledge (P), and
 
-   o  Contents (C) field: containing the original DTLS message.
+   *  Contents (C) field: containing the original DTLS message.
 
-   On receiving the JPY message, the EST Server retrieves the two parts.
-   The EST Server transiently stores the Header field information.  The
-   EST server uses the Contents field to execute the EST server
-   functionality.  However, when the EST Server replies, it also extends
-   its DTLS message with the header field in a JPY message and sends it
-   back to the Join Proxy.  The Header contains the original source
-   link-local address and port of the DTLS Client from the transient
-   state stored earlier (which can now be discarded) and the Contents
-   field contains the DTLS message.
+   On receiving the JPY message, the BRSKI Registrar retrieves the two
+   parts.
+
+   The BRSKI server transiently stores the Header field information.
+   The Registrar server uses the Contents field to execute the Registrar
+   server functionality.  However, when the Registrar replies, it also
+   extends its DTLS message with the header field in a JPY message and
+   sends it back to the Join Proxy.  The Registrar SHOULD NOT assume
+   that it can decode the Header Field, it should simply repeat it when
+   responding.  The Header contains the original source link-local
+   address and port of the DTLS Client from the transient state stored
+   earlier (which can now be discarded) and the Contents field contains
+   the DTLS message.
 
    On receiving the JPY message, the Join Proxy retrieves the two parts.
    It uses the Header field to route the DTLS message retrieved from the
@@ -333,9 +379,19 @@ Internet-Draft                 Join-Proxy                     March 2020
 
 
 
-Richardson, et al.     Expires September 15, 2020               [Page 6]
+
+
+
+
+
+
+
+
+
+
+Richardson, et al.        Expires 26 March 2021                 [Page 7]
 
-Internet-Draft                 Join-Proxy                     March 2020
+Internet-Draft                 Join-Proxy                 September 2020
 
 
    +--------------+------------+---------------+-----------------------+
@@ -366,16 +422,16 @@ Internet-Draft                 Join-Proxy                     March 2020
 
    JPY[H(),C()] = Join Proxy message with header H and content C
 
-
            Figure 3: constrained stateless joining message flow.
 
 5.3.  Stateless Message structure
 
    The JPY message is constructed as a payload with media-type
    application/multipart-core specified in [I-D.ietf-core-multipart-ct].
+
    Header and Contents fields use different media formats:
 
-   1.  header field: application/CBOR containing a CBOR array [RFC7049]
+   1.  header field: application/cbor containing a CBOR array [RFC7049]
        with the pledge IPv6 Link Local address as a 16-byte binary
        value, the pledge's UDP port number, if different from 5684, as a
        CBOR integer, and the proxy's ifindex or other identifier for the
@@ -389,9 +445,9 @@ Internet-Draft                 Join-Proxy                     March 2020
 
 
 
-Richardson, et al.     Expires September 15, 2020               [Page 7]
+Richardson, et al.        Expires 26 March 2021                 [Page 8]
 
-Internet-Draft                 Join-Proxy                     March 2020
+Internet-Draft                 Join-Proxy                 September 2020
 
 
     * application/pkcs7-mime; smime-type=server-generated-key
@@ -402,6 +458,8 @@ Internet-Draft                 Join-Proxy                     March 2020
     * application/csrattrs
     * application/pkcs10
     * application/pkix-cert
+
+   (XXX- add CDDL for CBOR array above)
 
    The content fields are DTLS encrypted.  In CBOR diagnostic notation
    the payload JPY[H(IP_P:p_P), with cf is content-format of DTLS-
@@ -443,11 +501,9 @@ Internet-Draft                 Join-Proxy                     March 2020
 
 
 
-
-
-Richardson, et al.     Expires September 15, 2020               [Page 8]
+Richardson, et al.        Expires 26 March 2021                 [Page 9]
 
-Internet-Draft                 Join-Proxy                     March 2020
+Internet-Draft                 Join-Proxy                 September 2020
 
 
    +-------------+----------------------------+------------------------+
@@ -475,7 +531,7 @@ Internet-Draft                 Join-Proxy                     March 2020
    |             |handshake messages          |to process it.          |
    +-------------+----------------------------+------------------------+
 
-         Figure 4: Comparison between stateful and stateless mode
+          Figure 4: Comparison between stateful and stateless mode
 
 7.  Discovery
 
@@ -488,9 +544,12 @@ Internet-Draft                 Join-Proxy                     March 2020
    Three discovery cases are discussed: coap discovery, 6tisch discovery
    and GRASP discovery.
 
-7.1.  Join Proxy discovers EST server
+7.1.  Pledge discovery of Join Proxy
 
-7.1.1.  Coap discovery
+   The pledge and Join Proxy are assumed to communicate via Link-Local
+   addresses.
+
+7.1.1.  CoAP discovery
 
    The discovery of the coaps EST server, using coap discovery, by the
    Join Proxy follows section 6 of [I-D.ietf-ace-coap-est].
@@ -498,12 +557,9 @@ Internet-Draft                 Join-Proxy                     March 2020
 
 
 
-
-
-
-Richardson, et al.     Expires September 15, 2020               [Page 9]
+Richardson, et al.        Expires 26 March 2021                [Page 10]
 
-Internet-Draft                 Join-Proxy                     March 2020
+Internet-Draft                 Join-Proxy                 September 2020
 
 
 7.1.2.  Autonomous Network
@@ -511,7 +567,7 @@ Internet-Draft                 Join-Proxy                     March 2020
    In the context of autonomous networks, the Join Proxy uses the DULL
    GRASP M_FLOOD mechanism to announce itself.  Section 4.1.1 of
    [I-D.ietf-anima-bootstrapping-keyinfra] discusses this in more
-   detail.  The EST-server announces itself using ACP instance of GRASP
+   detail.  The Registrar announces itself using ACP instance of GRASP
    using M_FLOOD messages.  Autonomous Network Join Proxies MUST support
    GRASP discovery of EST-server as decribed in section 4.3 of
    [I-D.ietf-anima-bootstrapping-keyinfra] .
@@ -521,10 +577,7 @@ Internet-Draft                 Join-Proxy                     March 2020
    The discovery of EST server by the pledge uses the enhanced beacons
    as discussed in [I-D.ietf-6tisch-enrollment-enhanced-beacon].
 
-7.2.  Pledge discovers Join Proxy
-
-   The pledge and Join Proxy are assumed to communicate via Link-Local
-   addresses.
+7.2.  Join Proxy discovers EST server
 
 7.2.1.  Autonomous Network
 
@@ -533,7 +586,7 @@ Internet-Draft                 Join-Proxy                     March 2020
    Section 4.1.1 [I-D.ietf-anima-bootstrapping-keyinfra] for the details
    of the objective.
 
-7.2.2.  Coap discovery
+7.2.2.  CoAP discovery
 
    In the context of a coap network without Autonomous Network support,
    discovery follows the standard coap policy.  The Pledge can discover
@@ -551,21 +604,19 @@ Internet-Draft                 Join-Proxy                     March 2020
    root resource /jp is used.  The example below shows the discovery of
    the presence and location of Join Proxy resources.
 
-
-
-
-
-
-
-Richardson, et al.     Expires September 15, 2020              [Page 10]
-
-Internet-Draft                 Join-Proxy                     March 2020
-
-
      REQ: GET coap://[FF02::FD]/.well-known/core?rt=brski-proxy
 
      RES: 2.05 Content
      </jp>; rt="brski-proxy";ct=62
+
+
+
+
+
+Richardson, et al.        Expires 26 March 2021                [Page 11]
+
+Internet-Draft                 Join-Proxy                 September 2020
+
 
    Port numbers, not returned in the example, are assumed to be the
    default numbers 5683 and 5684 for coap and coaps respectively
@@ -575,10 +626,24 @@ Internet-Draft                 Join-Proxy                     March 2020
 
 8.  Security Considerations
 
-   It should be noted here that the contents of the CBOR map are not
-   protected, but that the communication is between the Proxy and a
-   known registrar (a connected UDP socket), and that messages from
-   other origins are ignored.
+   It should be noted here that the contents of the CBOR map used to
+   convey return address information is not protected.  However, the
+   communication is between the Proxy and a known registrar are over the
+   already secured portion of the network, so are not visible to
+   eavesdropping systems.
+
+   All of the concerns in [I-D.ietf-anima-bootstrapping-keyinfra]
+   section 4.1 apply.  The pledge can be deceived by malicious AN_Proxy
+   announcements.  The pledge will only join a network to which it
+   receives a valid [RFC8366] voucher.
+
+   If the proxy/Registrar was not over a secure network, then an
+   attacker could change the cbor array, causing the pledge to send
+   traffic to another node.  If the such scenario needed to be
+   supported, then it would be reasonable for the Proxy to encrypt the
+   CBOR array using a locally generated symmetric key.  The Registrar
+   would not be able to examine the result, but it does not need to do
+   so.  This is a topic for future work.
 
 9.  IANA Considerations
 
@@ -601,6 +666,14 @@ Internet-Draft                 Join-Proxy                     March 2020
 
    Many thanks for the comments by Brian Carpenter.
 
+
+
+
+Richardson, et al.        Expires 26 March 2021                [Page 12]
+
+Internet-Draft                 Join-Proxy                 September 2020
+
+
 11.  Contributors
 
    Sandeep Kumar, Sye loong Keoh, and Oscar Garcia-Morchon are the co-
@@ -608,43 +681,33 @@ Internet-Draft                 Join-Proxy                     March 2020
    served as a basis for this document.  Much text from their draft is
    copied over to this draft.
 
-
-
-
-
-
-Richardson, et al.     Expires September 15, 2020              [Page 11]
-
-Internet-Draft                 Join-Proxy                     March 2020
-
-
 12.  Changelog
 
 12.1.  01 to 02
 
-   o  extended the discovery section
+   *  extended the discovery section
 
-   o  removed inconsistencies from the the flow diagrams
+   *  removed inconsistencies from the the flow diagrams
 
-   o  Improved readability of the examples.
+   *  Improved readability of the examples.
 
-   o  stateful configurations reduced to one
+   *  stateful configurations reduced to one
 
 12.2.  00 to 01
 
-   o  Added Contributors section
+   *  Added Contributors section
 
-   o  Adapted content-formats to est-coaps formats
+   *  Adapted content-formats to est-coaps formats
 
-   o  Aligned examples with est-coaps examples
+   *  Aligned examples with est-coaps examples
 
-   o  Added statefull Proxy to stateless proxy
+   *  Added statefull Proxy to stateless proxy
 
 12.3.  00 to 00
 
-   o  added payload examples in appendix
+   *  added payload examples in appendix
 
-   o  discovery for three cases: AN, 6tisch and coaps
+   *  discovery for three cases: AN, 6tisch and coaps
 
 13.  References
 
@@ -653,42 +716,55 @@ Internet-Draft                 Join-Proxy                     March 2020
    [I-D.ietf-6tisch-enrollment-enhanced-beacon]
               Dujovne, D. and M. Richardson, "IEEE 802.15.4 Information
               Element encapsulation of 6TiSCH Join and Enrollment
-              Information", draft-ietf-6tisch-enrollment-enhanced-
-              beacon-14 (work in progress), February 2020.
+              Information", Work in Progress, Internet-Draft, draft-
+              ietf-6tisch-enrollment-enhanced-beacon-14, 21 February
+              2020, <http://www.ietf.org/internet-drafts/draft-ietf-
+              6tisch-enrollment-enhanced-beacon-14.txt>.
+
+
+
+
+
+Richardson, et al.        Expires 26 March 2021                [Page 13]
+
+Internet-Draft                 Join-Proxy                 September 2020
+
 
    [I-D.ietf-ace-coap-est]
               Stok, P., Kampanakis, P., Richardson, M., and S. Raza,
-              "EST over secure CoAP (EST-coaps)", draft-ietf-ace-coap-
-              est-18 (work in progress), January 2020.
+              "EST over secure CoAP (EST-coaps)", Work in Progress,
+              Internet-Draft, draft-ietf-ace-coap-est-18, 6 January
+              2020, <http://www.ietf.org/internet-drafts/draft-ietf-ace-
+              coap-est-18.txt>.
 
    [I-D.ietf-anima-bootstrapping-keyinfra]
               Pritikin, M., Richardson, M., Eckert, T., Behringer, M.,
               and K. Watsen, "Bootstrapping Remote Secure Key
-              Infrastructures (BRSKI)", draft-ietf-anima-bootstrapping-
-              keyinfra-38 (work in progress), March 2020.
-
-
-
-Richardson, et al.     Expires September 15, 2020              [Page 12]
-
-Internet-Draft                 Join-Proxy                     March 2020
-
+              Infrastructures (BRSKI)", Work in Progress, Internet-
+              Draft, draft-ietf-anima-bootstrapping-keyinfra-44, 21
+              September 2020, <http://www.ietf.org/internet-drafts/
+              draft-ietf-anima-bootstrapping-keyinfra-44.txt>.
 
    [I-D.ietf-anima-constrained-voucher]
               Richardson, M., Stok, P., and P. Kampanakis, "Constrained
-              Voucher Artifacts for Bootstrapping Protocols", draft-
-              ietf-anima-constrained-voucher-07 (work in progress),
-              January 2020.
+              Voucher Artifacts for Bootstrapping Protocols", Work in
+              Progress, Internet-Draft, draft-ietf-anima-constrained-
+              voucher-08, 13 July 2020, <http://www.ietf.org/internet-
+              drafts/draft-ietf-anima-constrained-voucher-08.txt>.
 
    [I-D.ietf-anima-grasp]
               Bormann, C., Carpenter, B., and B. Liu, "A Generic
-              Autonomic Signaling Protocol (GRASP)", draft-ietf-anima-
-              grasp-15 (work in progress), July 2017.
+              Autonomic Signaling Protocol (GRASP)", Work in Progress,
+              Internet-Draft, draft-ietf-anima-grasp-15, 13 July 2017,
+              <http://www.ietf.org/internet-drafts/draft-ietf-anima-
+              grasp-15.txt>.
 
    [I-D.ietf-core-multipart-ct]
               Fossati, T., Hartke, K., and C. Bormann, "Multipart
-              Content-Format for CoAP", draft-ietf-core-multipart-ct-04
-              (work in progress), August 2019.
+              Content-Format for CoAP", Work in Progress, Internet-
+              Draft, draft-ietf-core-multipart-ct-04, 21 August 2019,
+              <http://www.ietf.org/internet-drafts/draft-ietf-core-
+              multipart-ct-04.txt>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -703,6 +779,17 @@ Internet-Draft                 Join-Proxy                     March 2020
               Representation (CBOR)", RFC 7049, DOI 10.17487/RFC7049,
               October 2013, <https://www.rfc-editor.org/info/rfc7049>.
 
+
+
+Richardson, et al.        Expires 26 March 2021                [Page 14]
+
+Internet-Draft                 Join-Proxy                 September 2020
+
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
    [RFC8366]  Watsen, K., Richardson, M., Pritikin, M., and T. Eckert,
               "A Voucher Artifact for Bootstrapping Protocols",
               RFC 8366, DOI 10.17487/RFC8366, May 2018,
@@ -710,25 +797,25 @@ Internet-Draft                 Join-Proxy                     March 2020
 
 13.2.  Informative References
 
-   [duckling]
-              Stajano, F. and R. Anderson, "The resurrecting duckling:
+   [duckling] Stajano, F. and R. Anderson, "The resurrecting duckling:
               security issues for ad-hoc wireless networks", 1999,
-              <https://www.cl.cam.ac.uk/~fms27/
-              papers/1999-StajanoAnd-duckling.pdf>.
+              <https://www.cl.cam.ac.uk/~fms27/papers/1999-StajanoAnd-
+              duckling.pdf>.
 
    [I-D.kumar-dice-dtls-relay]
               Kumar, S., Keoh, S., and O. Garcia-Morchon, "DTLS Relay
-              for Constrained Environments", draft-kumar-dice-dtls-
-              relay-02 (work in progress), October 2014.
+              for Constrained Environments", Work in Progress, Internet-
+              Draft, draft-kumar-dice-dtls-relay-02, 20 October 2014,
+              <http://www.ietf.org/internet-drafts/draft-kumar-dice-
+              dtls-relay-02.txt>.
 
-
-
-
-
-Richardson, et al.     Expires September 15, 2020              [Page 13]
-
-Internet-Draft                 Join-Proxy                     March 2020
-
+   [I-D.richardson-anima-state-for-joinrouter]
+              Richardson, M., "Considerations for stateful vs stateless
+              join router in ANIMA bootstrap", Work in Progress,
+              Internet-Draft, draft-richardson-anima-state-for-
+              joinrouter-02, 25 January 2018, <http://www.ietf.org/
+              internet-drafts/draft-richardson-anima-state-for-
+              joinrouter-02.txt>.
 
    [pledge]   Dictionary.com, ., "Dictionary.com Unabridged", 2015,
               <http://dictionary.reference.com/browse/pledge>.
@@ -741,6 +828,19 @@ Internet-Draft                 Join-Proxy                     March 2020
    [RFC6690]  Shelby, Z., "Constrained RESTful Environments (CoRE) Link
               Format", RFC 6690, DOI 10.17487/RFC6690, August 2012,
               <https://www.rfc-editor.org/info/rfc6690>.
+
+   [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
+              Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
+              <https://www.rfc-editor.org/info/rfc6763>.
+
+
+
+
+
+Richardson, et al.        Expires 26 March 2021                [Page 15]
+
+Internet-Draft                 Join-Proxy                 September 2020
+
 
    [RFC6775]  Shelby, Z., Ed., Chakrabarti, S., Nordmark, E., and C.
               Bormann, "Neighbor Discovery Optimization for IPv6 over
@@ -768,23 +868,15 @@ Appendix A.  Stateless Proxy payload examples
    Examples are extensions of two examples shown in
    [I-D.ietf-ace-coap-est].  The following content formats are used:
 
-   o  60: application/cbor
+   *  60: application/cbor
 
-   o  62: application/multipart
+   *  62: application/multipart
 
-   o  281: application/pkcs7-mime; smime-type=certs-only
+   *  281: application/pkcs7-mime; smime-type=certs-only
 
-   o  284: application/pkcs8
+   *  284: application/pkcs8
 
-   o  286: application/pkcs10
-
-
-
-
-Richardson, et al.     Expires September 15, 2020              [Page 14]
-
-Internet-Draft                 Join-Proxy                     March 2020
-
+   *  286: application/pkcs10
 
    For presentation purposes the payloads are abbreviated as follows:
 
@@ -793,6 +885,18 @@ Internet-Draft                 Join-Proxy                     March 2020
       <cacrts request payload> = <empty>
 
    cacrts response payload:
+
+
+
+
+
+
+
+
+Richardson, et al.        Expires 26 March 2021                [Page 16]
+
+Internet-Draft                 Join-Proxy                 September 2020
+
 
       <cacrts response payload> =
       DTLS_encrypt(
@@ -837,9 +941,17 @@ Internet-Draft                 Join-Proxy                     March 2020
 
 
 
-Richardson, et al.     Expires September 15, 2020              [Page 15]
+
+
+
+
+
+
+
+
+Richardson, et al.        Expires 26 March 2021                [Page 17]
 
-Internet-Draft                 Join-Proxy                     March 2020
+Internet-Draft                 Join-Proxy                 September 2020
 
 
       <serverkeygen response payload> =
@@ -893,9 +1005,9 @@ A.1.  cacerts
 
 
 
-Richardson, et al.     Expires September 15, 2020              [Page 16]
+Richardson, et al.        Expires 26 March 2021                [Page 18]
 
-Internet-Draft                 Join-Proxy                     March 2020
+Internet-Draft                 Join-Proxy                 September 2020
 
 
        payload = [60, ["FE80::AB8", 9085, "ident"]]
@@ -949,9 +1061,9 @@ A.2.  serverkeygen
 
 
 
-Richardson, et al.     Expires September 15, 2020              [Page 17]
+Richardson, et al.        Expires 26 March 2021                [Page 19]
 
-Internet-Draft                 Join-Proxy                     March 2020
+Internet-Draft                 Join-Proxy                 September 2020
 
 
        payload = [60, ["FE80::AB8", 9085, "ident"],
@@ -1005,4 +1117,4 @@ Authors' Addresses
 
 
 
-Richardson, et al.     Expires September 15, 2020              [Page 18]
+Richardson, et al.        Expires 26 March 2021                [Page 20]
