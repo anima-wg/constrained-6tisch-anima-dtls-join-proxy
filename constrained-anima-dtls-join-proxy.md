@@ -1,9 +1,9 @@
 ---
 title: Constrained Join Proxy for Bootstrapping Protocols
 abbrev: Join-Proxy
-docname: draft-vanderstok-anima-constrained-join-proxy-04
+docname: draft-vanderstok-anima-constrained-join-proxy-05
 
-stand_alone: true
+# stand_alone: true
 
 ipr: trust200902
 area: Internet
@@ -35,7 +35,6 @@ author:
   email: pkampana@cisco.com
 
 normative:
-  RFC2119:
   RFC6347:
   RFC7049:
   RFC8366:
@@ -48,25 +47,6 @@ normative:
 informative:
   RFC6763:
   I-D.richardson-anima-state-for-joinrouter:
-  pledge:
-    title: "Dictionary.com Unabridged"
-    target: "http://dictionary.reference.com/browse/pledge"
-    author:
-      -
-        name: Dictionary.com
-    date: 2015
-
-  duckling:
-    title: "The resurrecting duckling: security issues for ad-hoc wireless networks"
-    target: "https://www.cl.cam.ac.uk/~fms27/papers/1999-StajanoAnd-duckling.pdf"
-    author:
-      -
-        ins: F. Stajano
-        name: Frank Stajano
-      -
-        ins: R. Anderson
-        name: Ross Anderson
-    date: 1999
   RFC6690:
   RFC7030:
   RFC7228:
@@ -77,28 +57,26 @@ informative:
 
 --- abstract
 
-This document defines a protocol to securely assign a pledge to an
-owner, using an intermediary node between pledge and owner.
-This intermediary node is known as a "constrained Join Proxy".
+This document defines a protocol to securely assign a pledge to a domain, represented by an EST server, using an intermediary node between pledge and EST server. This intermediary node is known as a "constrained Join Proxy".
 
-This document extends the work of {{I-D.ietf-anima-bootstrapping-keyinfra}} by replacing the Circuit-proxy by a stateless constrained (CoAP) Join Proxy.
+This document extends the work of {{I-D.ietf-anima-bootstrapping-keyinfra}} by replacing the Circuit-proxy by a stateless/stateful constrained (CoAP) Join Proxy.
 It transports join traffic from the pledge to the Registrar without requiring per-client state.
 
 --- middle
 
 # Introduction
 
-Enrolment of new nodes into constrained networks with constrained nodes present is described in
+Enrolment of new nodes into networks with enrolled nodes present is described in
 {{I-D.ietf-anima-bootstrapping-keyinfra}} ("BRSKI") and makes use of Enrolment over Secure Transport (EST) {{RFC7030}}
 with {{RFC8366}} vouchers to securely enroll devices.
 BRSKI connects new devices ("pledges") to extended EST servers ("Registrars") via a Join Proxy.
 
-The specified solutions use https and may be too large in terms of code space or bandwidth required.
-Constrained devices in constrained networks {{RFC7228}} typically implement the IPv6 over Low-Power Wireless personal Area Networks (6LoWPAN) {{RFC4944}} and Constrained Application Protocol (CoAP) {{RFC7252}}.
+The specified solutions use https and may be too large in terms of code space or bandwidth required for constrained devices.
+Constrained devices possibly part of constrained networks {{RFC7228}} typically implement the IPv6 over Low-Power Wireless personal Area Networks (6LoWPAN) {{RFC4944}} and Constrained Application Protocol (CoAP) {{RFC7252}}.
 
 CoAP can be run with the Datagram Transport Layer Security (DTLS) {{RFC6347}} as a security protocol for authenticity and confidentiality of the messages.
-This is described as the "coaps" scheme.
-A constrained version of EST, using Coap and DTLS, is described in {{I-D.ietf-ace-coap-est}}.
+This is known as the "coaps" scheme.
+A constrained version of EST, using Coap and DTLS, is described in {{I-D.ietf-ace-coap-est}}. The {I-D.ietf-anima-constrained-voucher} describes the BRSKI extensions to the EST server.
 
 DTLS is a client-server protocol relying on the underlying IP layer to perform the routing between the DTLS Client and the DTLS Server.
 However, the new "joining" device will not be IP routable until it is authenticated to the network.
@@ -106,12 +84,14 @@ A new "joining" device can only initially use a link-local IPv6 address to commu
 However, before the device can receive these configuration parameters, it needs to authenticate itself to the network to which it connects.
 IPv6 routing is necessary to establish a connection between joining device and the extended EST server.
 
+A DTLS connection is required between Pledge and EST server.
+
 This document specifies a new form of Join Proxy and protocol to act as intermediary between joining device and EST server to establish a connection between joining device and EST server.
 
 This document is very much inspired by text published earlier in {{I-D.kumar-dice-dtls-relay}}.
 {{I-D.richardson-anima-state-for-joinrouter}} outlined the various options for building a join proxy.
 {{I-D.ietf-anima-bootstrapping-keyinfra}} adopted only the Circuit Proxy method (1), leaving the other methods as future work.
-The document standardizes the CoAP/DTLS (method 4).
+This document standardizes the CoAP/DTLS (method 4).
 
 # Terminology          {#Terminology}
 
@@ -120,16 +100,16 @@ identically as in that document: artifact, imprint, domain, Join
 Registrar/Coordinator (JRC), Manufacturer Authorized Signing Authority
 (MASA), pledge, Trust of First Use (TOFU), and Voucher.
 
-# Requirements Language {#rfc2119}
+# Requirements Language {#reqlang}
 
 {::boilerplate bcp14}
 
 # Join Proxy functionality
 
 As depicted in the {{fig-net}}, the joining Device, or pledge (P), in an LLN mesh
-is more than one hop away from the EST server (E) and not yet authenticated into the network.
+can be more than one hop away from the EST server (E) and not yet authenticated into the network.
 
-At this stage, it can only communicate one-hop to its nearest neighbour, the Join Proxy (J) using their link-local  IPv6 addresses.
+In this situation, it can only communicate one-hop to its nearest neighbour, the Join Proxy (J) using their link-local  IPv6 addresses.
 However, the Pledge (P) needs to communicate with end-to-end security with a Registrar hosting the EST server (E) to authenticate and get the relevant system/network parameters.
 If the Pledge (P) initiates a DTLS connection to the EST server whose IP address has been pre-configured, then the packets are dropped at the Join Proxy (J) since the Pledge (P) is not yet admitted to the network or there is no IP routability to Pledge (P) for any returned messages.
 
@@ -146,10 +126,10 @@ If the Pledge (P) initiates a DTLS connection to the EST server whose IP address
 ~~~~
 {: #fig-net title='multi-hop enrolment.' align="left"}
 
-Furthermore, the Pledge (P) may wish to establish a secure connection to the EST server (E) in the network assuming   appropriate credentials are exchanged out-of-band, e.g. a hash of the Pledge (P)'s raw public key could be provided to the EST server (E).
-However, the Pledge (P) may be unaware of the IP address of the EST-server (E) to initiate a DTLS connection and perform authentication with.
+Without routing the Pledge (P) cannot establish a secure connection to the EST server (E) in the network assuming   appropriate credentials are exchanged out-of-band, e.g. a hash of the Pledge (P)'s raw public key could be provided to the EST server (E).
 
-A DTLS connection is required between Pledge and EST server.
+Furthermore, the Pledge (P) may be unaware of the IP address of the EST server (E) to initiate a DTLS connection and perform authentication.
+
 To overcome the problems with non-routability of DTLS packets and/or discovery of the destination address of the EST  Server to contact, the Join Proxy is introduced.
 This Join Proxy functionality is configured into all authenticated devices in the network which may act as the Join Proxy for newly joining nodes.
 The Join Proxy allows for routing of the packets from the Pledge using IP routing to the intended EST Server.
@@ -164,16 +144,16 @@ A Join Proxy can operate in two modes:
 
 ## Statefull Join Proxy
 
-In stateful mode, the joining node forwards the DTLS messages to the BRSKI Registrar.
+In stateful mode, the joining node forwards the DTLS messages to the EST server.
 
 Assume that the Pledge does not know the IP address of the EST Server it needs to contact.
-In that situation, the Join Proxy must know the (configured or discovered) IP address of a BRSKI Registrar.
+In that situation, the Join Proxy must know the (configured or discovered) IP address of a EST server.
 (Discovery can be based upon {{I-D.ietf-anima-bootstrapping-keyinfra}} section 4.3, or via DNS-SD service discovery {{RFC6763}})
-The Pledge initiates its request as if the Join Proxy is the intended Registrar.
-The Join Proxy changes the IP packet (without modifying the DTLS message) as in the previous case by modifying both  the source and destination addresses to forward the message to the intended EST Server.
+The Pledge initiates its request as if the Join Proxy is the intended EST server.
+The Join Proxy changes the IP packet (without modifying the DTLS message) by modifying both  the source and destination addresses to forward the message to the intended EST Server.
 The Join Proxy maintains a 4-tuple array to translate the DTLS messages received from the EST Server and forward it to the EST Client.
 This is a form of Network Address translation, where the Join Proxy acts as a forward proxy.
-In {{fig-statefull2}} the various steps of the message flow are shown:
+In {{fig-statefull2}} the various steps of the message flow are shown, with 5684 being the standard coaps port:
 
 ~~~~
 +------------+------------+-------------+--------------------------+
@@ -208,27 +188,27 @@ IP_Jb:p_Rb = Global IP address and port of Join proxy
 The Join Proxy is stateless to minimize the requirements on the constrained Join Proxy device.
 Stateless operation requires no memory in the Join Proxy device, but may also reduce the CPU impact as the device does not need to search through a state table.
 
-When a joining device as a client attempts a DTLS connection to the EST server, it uses its link-local IP address as its IP source address.
+When a client joining device attempts a DTLS connection to the EST server, it uses its link-local IP address as its IP source address.
 This message is transmitted one-hop to a neighbouring (join proxy) node.
 Under normal circumstances, this message would be dropped at the neighbour node since the joining device is not yet IP routable or it is not yet authenticated to send messages through the network.
-However, if the neighbour device has the Join Proxy functionality enabled, it routes the DTLS message to a specific Registrar.
+However, if the neighbour device has the Join Proxy functionality enabled, it routes the DTLS message to a specific EST server.
 Additional security mechanisms need to exist to prevent this routing functionality being used by rogue nodes to bypass any network authentication procedures.
 
-If an untrusted DTLS Client that can only use link-local addressing wants to contact a trusted end-point Registrar, it sends the DTLS message to the Join Proxy.
+If an untrusted DTLS Client that can only use link-local addressing wants to contact a trusted end-point EST server, it sends the DTLS message to the Join Proxy.
 
-The Join Proxy extends this message into a new type of message called Join ProxY (JPY) message and sends it on to the Registrar.
+The Join Proxy extends this message into a new type of message called Join ProxY (JPY) message and sends it on to the EST server.
 
 The JPY message payload consists of two parts:
 
   * Header (H) field: consisting of the source link-local address and port of the Pledge (P), and
   * Contents (C) field: containing the original DTLS message.
 
-On receiving the JPY message, the BRSKI Registrar retrieves the two parts.
+On receiving the JPY message, the EST server retrieves the two parts.
 
-The BRSKI server transiently stores the Header field information.
-The Registrar server uses the Contents field to execute the Registrar server functionality.
-However, when the Registrar replies, it also extends its DTLS message with the header field in a JPY message and sends it back to the Join Proxy.
-The Registrar SHOULD NOT assume that it can decode the Header Field, it should simply repeat it when responding.
+The EST server transiently stores the Header field information.
+The EST server uses the Contents field to execute the EST server functionality.
+However, when the EST server replies, it also extends its DTLS message with the header field in a JPY message and sends it back to the Join Proxy.
+The EST server SHOULD NOT assume that it can decode the Header Field, it should simply repeat it when responding.
 The Header contains the original source link-local address and port of the DTLS Client from the transient state stored earlier (which can now be discarded) and the Contents field contains the DTLS message.
 
 On receiving the JPY message, the Join Proxy retrieves the two parts.
@@ -241,26 +221,26 @@ The {{fig-stateless}} depicts the message flow diagram:
 | EST  Client  | Join Proxy |    EST server |        Message        |
 |     (P)      |     (J)    |      (E)      |Src_IP:port|Dst_IP:port|
 +--------------+------------+---------------+-----------+-----------+
-|      --ClientHello-->                     | IP_P:p_P  |IP_Ja:5684 |
-|                    --JPY[H(IP_P:p_P),-->  | IP_Jb:p_Jb|IP_E:5684  |
+|      --ClientHello-->                     | IP_P:p_P  |IP_Ja:p_Ja |
+|                    --JPY[H(IP_P:p_P),-->  | IP_Jb:p_Jb|IP_E:p_Ea  |
 |                          C(ClientHello)]  |           |           |
-|                    <--JPY[H(IP_P:p_P),--  | IP_E:5684 |IP_Jb:p_Jb |
+|                    <--JPY[H(IP_P:p_P),--  | IP_E:p_Ea |IP_Jb:p_Jb |
 |                         C(ServerHello)]   |           |           |
-|      <--ServerHello--                     | IP_Ja:5684|IP_P:p_P   |
+|      <--ServerHello--                     | IP_Ja:p_Ja|IP_P:p_P   |
 |              :                            |           |           |
 |              :                            |     :     |    :      |
 |                                           |     :     |    :      |
-|      --Finished-->                        | IP_P:p_P  |IP_Ja:5684 |
-|                    --JPY[H(IP_P:p_P),-->  | IP_Jb:p_Jb|IP_E:5684  |
+|      --Finished-->                        | IP_P:p_P  |IP_Ja:p_Ja |
+|                    --JPY[H(IP_P:p_P),-->  | IP_Jb:p_Jb|IP_E:p_Ea  |
 |                          C(Finished)]     |           |           |
-|                    <--JPY[H(IP_P:p_P),--  | IP_E:5684 |IP_Jb:p_Jb |
+|                    <--JPY[H(IP_P:p_P),--  | IP_E:p_Ea |IP_Jb:p_Jb |
 |                         C(Finished)]      |           |           |
-|      <--Finished--                        | IP_Ja:5684|IP_P:p_P   |
+|      <--Finished--                        | IP_Ja:p_Ja|IP_P:p_P   |
 |              :                            |     :     |    :      |
 +-------------------------------------------+-----------+-----------+
 IP_P:p_P = Link-local IP address and port of the Pledge
-IP_E:5684 = Global IP address and coaps port of EST Server
-IP_Ja:5684 = Link-local IP address and coaps port of Join Proxy
+IP_E:p_Ea = Global IP address and join port of EST Server
+IP_Ja:p_Ja = Link-local IP address and join port of Join Proxy
 IP_Jb:p_Jb = Global IP address and port of Join Proxy
 
 JPY[H(),C()] = Join Proxy message with header H and content C
@@ -314,7 +294,7 @@ resources and network bandwidth.
 |             |maintain mapping between    | Proxy                  |
 |             |the address and port number |                        |
 |             |of the pledge and those     |                        |
-|             |of the EST-server.          |                        |
+|             |of the EST server.          |                        |
 +-------------+----------------------------+------------------------+
 |Packet size  |The size of the forwarded   |Size of the forwarded   |
 |             |message is the same as the  |message is bigger than  |
@@ -335,8 +315,14 @@ resources and network bandwidth.
 
 #Discovery
 
-It is assumed that Join Proxy seamlessly provides a coaps connection between Pledge and coaps EST-server.
-An additional Registrar is needed to connect the Pledge to an http EST server, see section 8 of {{I-D.ietf-ace-coap-est}}. In particular this section replaces section 4.2 of {{I-D.ietf-anima-bootstrapping-keyinfra}}.
+It is assumed that Join Proxy seamlessly provides a coaps connection between Pledge and coaps EST server. In particular this section replaces section 4.2 of {{I-D.ietf-anima-bootstrapping-keyinfra}}.
+
+The discovery follows two steps:
+
+   1. The pledge is one hop away from the EST server. The pledge discovers the link-local address of the EST_server as described in {I-D.ietf-ace-coap-est}. From then on, it follows the BRSKI process as described in {I-D.ietf-ace-coap-est}, using link-local addresses.
+   2. The pledge is more than one hop away from a relevant EST server, and discovers the link-local address of a Join Proxy. The pledge then follows the BRSKI procedure using the link-local address of the Join Proxy.
+
+Once a pledge is enrolled, it may function as Join Proxy. The Join Proxy functions are advertised as descibed below. Usually, the Join Proxy functions are offered via a "join" port, and not the standard coaps port. The Join Proxy MUST show the join port number when reponding to the .well-known/core request addressed to the standard coap/coaps port.
 
 Three discovery cases are discussed: coap discovery, 6tisch discovery and GRASP discovery.
 
@@ -352,7 +338,7 @@ The discovery of the coaps EST server, using coap discovery, by the Join Proxy f
 
 In the context of autonomous networks, the Join Proxy uses the DULL GRASP M_FLOOD mechanism to announce itself. Section 4.1.1 of {{I-D.ietf-anima-bootstrapping-keyinfra}} discusses this in more detail.
 The Registrar announces itself using ACP instance of GRASP using M_FLOOD messages.
-Autonomous Network Join Proxies MUST support GRASP discovery of EST-server as decribed in section 4.3 of {{I-D.ietf-anima-bootstrapping-keyinfra}} .
+Autonomous Network Join Proxies MUST support GRASP discovery of EST server as decribed in section 4.3 of {{I-D.ietf-anima-bootstrapping-keyinfra}} .
 
 ### 6tisch discovery
 
@@ -382,11 +368,11 @@ The example below shows the discovery of the presence and location of Join Proxy
   REQ: GET coap://[FF02::FD]/.well-known/core?rt=brski-proxy
 
   RES: 2.05 Content
-  </jp>; rt="brski-proxy";ct=62
+  <coaps://[IP_address]:jp-port/jp>; rt="brski-proxy";ct=62
 ~~~~
 
-Port numbers, not returned in the example, are assumed to be the default numbers 5683 and 5684 for coap and coaps respectively (sections 12.6 and 12.7 of {{RFC7252}}.
-Discoverable port numbers MAY be returned in the &lt;href&gt; of the payload (see section 5.1 of {{I-D.ietf-ace-coap-est}}).
+Port numbers are assumed to be the default numbers 5683 and 5684 for coap and coaps respectively (sections 12.6 and 12.7 of {{RFC7252}} when not shown in the response.
+Discoverable port numbers are usually returned for Join Proxy resources in the &lt;href&gt; of the payload (see section 5.1 of {{I-D.ietf-ace-coap-est}}).
 
 # Security Considerations
 
@@ -424,6 +410,11 @@ Many thanks for the comments by Brian Carpenter.
 Sandeep Kumar, Sye loong Keoh, and Oscar Garcia-Morchon are the co-authors of the draft-kumar-dice-dtls-relay-02. Their draft has served as a basis for this document. Much text from their draft is copied over to this draft.
 
 # Changelog
+
+## 04 to 05
+
+   * Terminology updated
+   * Emphasized new Join Proxy port
 
 ## 01 to 02
 
@@ -548,7 +539,7 @@ serverkeygen response payload:
 
 ##cacerts
 
-The request from Join Proxy to EST-server looks like:
+The request from Join Proxy to EST server looks like:
 
 ~~~
     Get coaps://192.0.2.1/est/crts
@@ -600,7 +591,7 @@ In CBOR diagnostic:
 
 ##serverkeygen
 
-The request from Join Proxy to EST-server looks like:
+The request from Join Proxy to EST server looks like:
 
 ~~~
     Get coaps://192.0.2.1/est/skg
