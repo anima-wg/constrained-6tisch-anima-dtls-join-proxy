@@ -5,10 +5,10 @@
 anima Working Group                                        M. Richardson
 Internet-Draft                                  Sandelman Software Works
 Intended status: Standards Track                         P. van der Stok
-Expires: April 22, 2021                           vanderstok consultancy
+Expires: April 23, 2021                           vanderstok consultancy
                                                            P. Kampanakis
                                                            Cisco Systems
-                                                        October 19, 2020
+                                                        October 20, 2020
 
 
            Constrained Join Proxy for Bootstrapping Protocols
@@ -42,7 +42,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on April 22, 2021.
+   This Internet-Draft will expire on April 23, 2021.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Richardson, et al.       Expires April 22, 2021                 [Page 1]
+Richardson, et al.       Expires April 23, 2021                 [Page 1]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Richardson, et al.       Expires April 22, 2021                 [Page 2]
+Richardson, et al.       Expires April 23, 2021                 [Page 2]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -165,7 +165,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                 [Page 3]
+Richardson, et al.       Expires April 23, 2021                 [Page 3]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -221,7 +221,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                 [Page 4]
+Richardson, et al.       Expires April 23, 2021                 [Page 4]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -277,7 +277,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                 [Page 5]
+Richardson, et al.       Expires April 23, 2021                 [Page 5]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -333,7 +333,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                 [Page 6]
+Richardson, et al.       Expires April 23, 2021                 [Page 6]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -389,7 +389,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                 [Page 7]
+Richardson, et al.       Expires April 23, 2021                 [Page 7]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -445,7 +445,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                 [Page 8]
+Richardson, et al.       Expires April 23, 2021                 [Page 8]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -465,8 +465,8 @@ Internet-Draft                 Join-Proxy                   October 2020
    the payload JPY[H(IP_P:p_P), with cf is content-format of DTLS-
    content, will look like:
 
-         [ 60: [IP_p, p_P, ident]
-           cf: h'DTLS-content']
+         [ 60, [IP_p, p_P, ident]
+           cf, h'DTLS-content']
 
    Examples are shown in Appendix A.
 
@@ -501,7 +501,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                 [Page 9]
+Richardson, et al.       Expires April 23, 2021                 [Page 9]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -557,7 +557,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                [Page 10]
+Richardson, et al.       Expires April 23, 2021                [Page 10]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -613,7 +613,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                [Page 11]
+Richardson, et al.       Expires April 23, 2021                [Page 11]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -669,7 +669,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                [Page 12]
+Richardson, et al.       Expires April 23, 2021                [Page 12]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -725,7 +725,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                [Page 13]
+Richardson, et al.       Expires April 23, 2021                [Page 13]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -781,7 +781,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                [Page 14]
+Richardson, et al.       Expires April 23, 2021                [Page 14]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -837,7 +837,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-Richardson, et al.       Expires April 22, 2021                [Page 15]
+Richardson, et al.       Expires April 23, 2021                [Page 15]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -869,6 +869,8 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 Appendix A.  Stateless Proxy payload examples
 
+   Examples need to be redone
+
    Examples are extensions of two examples shown in
    [I-D.ietf-ace-coap-est].  The following content formats are used:
 
@@ -888,15 +890,15 @@ Appendix A.  Stateless Proxy payload examples
 
       <cacrts request payload> = <empty>
 
-   cacrts response payload:
 
 
 
-
-Richardson, et al.       Expires April 22, 2021                [Page 16]
+Richardson, et al.       Expires April 23, 2021                [Page 16]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
+
+   cacrts response payload:
 
       <cacrts response payload> =
       DTLS_encrypt(
@@ -947,9 +949,7 @@ Internet-Draft                 Join-Proxy                   October 2020
 
 
 
-
-
-Richardson, et al.       Expires April 22, 2021                [Page 17]
+Richardson, et al.       Expires April 23, 2021                [Page 17]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -1005,7 +1005,7 @@ A.1.  cacerts
 
 
 
-Richardson, et al.       Expires April 22, 2021                [Page 18]
+Richardson, et al.       Expires April 23, 2021                [Page 18]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -1061,7 +1061,7 @@ A.2.  serverkeygen
 
 
 
-Richardson, et al.       Expires April 22, 2021                [Page 19]
+Richardson, et al.       Expires April 23, 2021                [Page 19]
 
 Internet-Draft                 Join-Proxy                   October 2020
 
@@ -1117,4 +1117,4 @@ Authors' Addresses
 
 
 
-Richardson, et al.       Expires April 22, 2021                [Page 20]
+Richardson, et al.       Expires April 23, 2021                [Page 20]

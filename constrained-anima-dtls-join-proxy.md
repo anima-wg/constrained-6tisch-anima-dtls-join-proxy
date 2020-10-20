@@ -272,8 +272,8 @@ Header and Contents fields use different media formats:
 The content fields are DTLS encrypted. In CBOR diagnostic notation the payload JPY[H(IP_P:p_P), with cf is content-format of DTLS-content, will look like:
 
 ~~~
-      [ 60: [IP_p, p_P, ident]
-        cf: h'DTLS-content']
+      [ 60, [IP_p, p_P, ident]
+        cf, h'DTLS-content']
 ~~~
 
 Examples are shown in {{examples}}.
@@ -439,6 +439,10 @@ Sandeep Kumar, Sye loong Keoh, and Oscar Garcia-Morchon are the co-authors of th
 --- back
 
 #Stateless Proxy payload examples {#examples}
+
+~~~
+Examples need to be redone
+~~~
 
 Examples are extensions of two examples shown in {{I-D.ietf-ace-coap-est}}.
 The following content formats are used:
